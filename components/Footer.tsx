@@ -1,5 +1,6 @@
 
 import { Facebook, Twitter, Instagram, Youtube, Linkedin, Globe, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -42,10 +43,24 @@ export default function Footer() {
                 <h4 className="font-bold text-gray-200 mb-4 uppercase tracking-wider text-xs">Mobile</h4>
                 <div className="flex flex-col gap-3">
                    <button className="flex items-center gap-3 bg-[#2d2e30] hover:bg-[#3d3e40] px-4 py-2 rounded-lg transition-colors border border-gray-700 w-fit">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" className="h-6" />
+                      <Image
+                        src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
+                        alt="App Store"
+                        width={102}
+                        height={30}
+                        className="h-6 w-auto"
+                        unoptimized
+                      />
                    </button>
                    <button className="flex items-center gap-3 bg-[#2d2e30] hover:bg-[#3d3e40] px-4 py-2 rounded-lg transition-colors border border-gray-700 w-fit">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="h-6" />
+                      <Image
+                        src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                        alt="Google Play"
+                        width={101}
+                        height={30}
+                        className="h-6 w-auto"
+                        unoptimized
+                      />
                    </button>
                 </div>
              </div>

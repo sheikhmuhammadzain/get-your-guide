@@ -3,12 +3,12 @@
 
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
-import FilterBar from '@/components/FilterBar';
 import ProductList from '@/components/ProductList';
 import AiAssistant from '@/components/AiAssistant';
 import Footer from '@/components/Footer';
 import ItineraryGenerator from '@/components/ItineraryGenerator';
 import { ArrowUpDown, Info, Sparkles, Map } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function Home() {
@@ -67,10 +67,12 @@ export default function Home() {
                   {showMap && (
                      <div className="hidden md:block w-1/2 lg:w-2/5 sticky top-[200px] h-[calc(100vh-220px)] rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 animate-in fade-in slide-in-from-right-10 duration-300">
                         <div className="w-full h-full relative">
-                           <img
+                           <Image
                               src="https://picsum.photos/seed/map/800/1000"
                               alt="Map of Turkey"
+                              fill
                               className="w-full h-full object-cover filter brightness-[0.85] grayscale-[0.2]"
+                              unoptimized
                            />
                            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
                               <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg font-bold text-gray-800 flex items-center gap-2">

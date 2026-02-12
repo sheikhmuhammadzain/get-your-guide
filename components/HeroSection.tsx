@@ -1,6 +1,5 @@
-import { Search, MapPin, Star, Heart } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 import Image from 'next/image';
-import ProductCard from './ProductCard';
 
 export default function HeroSection() {
     const recommendedTours = [
@@ -13,6 +12,7 @@ export default function HeroSection() {
             features: ["Skip the line", "Small group"],
             from_price: 58,
             original_price: 72,
+            reviews: 3287,
             badge: "Likely to sell out"
         },
         {
@@ -24,6 +24,7 @@ export default function HeroSection() {
             features: ["Skip the line", "Optional audio guide"],
             from_price: 43,
             original_price: 54,
+            reviews: 1795,
             badge: "Likely to sell out"
         },
         {
@@ -34,7 +35,8 @@ export default function HeroSection() {
             duration: "2 - 3 hours",
             features: ["Skip the line", "Private option available"],
             from_price: 72,
-            original_price: 144
+            original_price: 144,
+            reviews: 4123
         },
         {
             start_index: 104,
@@ -44,6 +46,7 @@ export default function HeroSection() {
             duration: "1 hour",
             features: ["Skip the line", "Optional audio guide"],
             from_price: 5,
+            reviews: 2860,
             badge: "Likely to sell out"
         }
     ];
@@ -185,7 +188,7 @@ export default function HeroSection() {
                                             <div className="flex items-center gap-1">
                                                 <Star className="w-3 h-3 fill-[#FFC800] text-[#FFC800]" />
                                                 <span className="text-sm font-bold text-[#1a1b1d]">{item.rating}</span>
-                                                <span className="text-xs text-gray-400">({Math.floor(Math.random() * 5000)})</span>
+                                                <span className="text-xs text-gray-400">({item.reviews})</span>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -203,7 +206,7 @@ export default function HeroSection() {
                 </div>
 
                 <div className="flex items-center gap-2 mb-6">
-                    <h2 className="text-2xl font-bold text-[#1a1b1d]">Things to do wherever you're going</h2>
+                    <h2 className="text-2xl font-bold text-[#1a1b1d]">Things to do wherever you&apos;re going</h2>
                 </div>
 
                 {/* Bottom Destination Grid Placeholder - Just to match the screenshot bottom part */}

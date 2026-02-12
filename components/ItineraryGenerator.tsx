@@ -1,5 +1,5 @@
 
-import { Sparkles, Calendar, MapPin, DollarSign, Clock } from 'lucide-react';
+import { Sparkles, MapPin, DollarSign, Clock } from 'lucide-react';
 
 export default function ItineraryGenerator() {
   return (

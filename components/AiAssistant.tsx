@@ -36,7 +36,7 @@ export default function AiAssistant() {
                 <Sparkles className="w-4 h-4 text-[#0071eb]" />
               </div>
               <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm text-sm text-gray-700">
-                Merhaba! 👋 I'm your AI travel assistant for Turkey. How can I help you plan your trip today?
+                Merhaba! 👋 I&apos;m your AI travel assistant for Turkey. How can I help you plan your trip today?
               </div>
             </div>
             
