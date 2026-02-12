@@ -16,7 +16,7 @@ export interface Product {
 export const products: Product[] = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1541336032412-2048a614051f?q=80&w=2070&auto=format&fit=crop', // Cappadocia Hot Air Balloons
+    image: 'https://picsum.photos/seed/cappadocia/800/600', // Consistent random image for Cappadocia
     title: 'Cappadocia: Sunrise Hot Air Balloon Flight with Champagne',
     badge: 'AI Recommended',
     duration: '3 hours',
@@ -29,7 +29,7 @@ export const products: Product[] = [
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1974&auto=format&fit=crop', // Istanbul Hagia Sophia
+    image: 'https://picsum.photos/seed/istanbul/800/600', // Consistent random image for Istanbul
     title: 'Istanbul: Hagia Sophia, Blue Mosque & Topkapi Palace Tour',
     badge: 'Top Cultural Pick',
     duration: '4 hours',
@@ -41,7 +41,7 @@ export const products: Product[] = [
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1552483775-db7297b2d5f8?q=80&w=2070&auto=format&fit=crop', // Ephesus
+    image: 'https://picsum.photos/seed/ephesus/800/600', // Consistent random image for Ephesus
     title: 'Ephesus: Small Group Tour from Kusadasi/Izmir',
     badge: 'Best Value',
     duration: '6 hours',
@@ -54,7 +54,7 @@ export const products: Product[] = [
   },
   {
     id: '4',
-    image: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?q=80&w=2070&auto=format&fit=crop', // Pamukkale
+    image: 'https://picsum.photos/seed/pamukkale/800/600', // Consistent random image for Pamukkale
     title: 'Pamukkale & Hierapolis Full-Day Guided Tour',
     badge: 'Natural Wonder',
     duration: '8 hours',
