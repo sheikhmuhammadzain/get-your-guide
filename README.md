@@ -7,7 +7,7 @@ Modular full-stack Next.js app with MongoDB, NextAuth, versioned APIs, itinerary
 - MongoDB Atlas + Mongoose
 - NextAuth (Google + Email magic link support)
 - OpenAI (hybrid with deterministic fallback)
-- Mapbox (`react-map-gl`)
+- MapLibre (`react-map-gl/maplibre`)
 - Zod validation + RFC7807-style API errors
 
 ## Architecture
@@ -28,6 +28,14 @@ Modular full-stack Next.js app with MongoDB, NextAuth, versioned APIs, itinerary
 - `GET /api/v1/realtime/weather`
 - `GET /api/v1/realtime/currency`
 - `GET /api/v1/realtime/transport`
+- `GET /api/v1/orders`
+- `GET /api/v1/users/me`
+- `GET /api/v1/users/me/dashboard`
+- `GET /api/v1/admin/overview`
+- `GET /api/v1/admin/users`
+- `GET /api/v1/admin/orders`
+- `GET /api/v1/admin/itineraries`
+- `POST /api/v1/checkout`
 
 ## Setup
 1. Copy `.env.example` to `.env.local`.
@@ -35,7 +43,7 @@ Modular full-stack Next.js app with MongoDB, NextAuth, versioned APIs, itinerary
    - `MONGODB_URI`
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL`
-   - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
+   - `ADMIN_EMAILS` (comma-separated admin emails for `/admin`)
 3. Install and run:
 
 ```bash

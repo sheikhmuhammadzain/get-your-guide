@@ -6,6 +6,20 @@ import GoogleProvider from "next-auth/providers/google";
 import { getMongoClientPromise } from "@/lib/db/mongodb-client";
 import { getServerEnv } from "@/lib/env/server";
 
+function ensureDevAuthEnv(env: ReturnType<typeof getServerEnv>) {
+  if (env.NODE_ENV === "production") {
+    return;
+  }
+
+  if (!process.env.NEXTAUTH_URL) {
+    process.env.NEXTAUTH_URL = "http://localhost:3000";
+  }
+
+  if (!process.env.NEXTAUTH_SECRET) {
+    process.env.NEXTAUTH_SECRET = "dev-only-nextauth-secret-change-in-production";
+  }
+}
+
 function buildProviders(env: ReturnType<typeof getServerEnv>): NonNullable<NextAuthOptions["providers"]> {
   const providers: NonNullable<NextAuthOptions["providers"]> = [];
 
@@ -31,9 +45,30 @@ function buildProviders(env: ReturnType<typeof getServerEnv>): NonNullable<NextA
     providers.push(
       CredentialsProvider({
         name: "Development Fallback",
-        credentials: {},
-        async authorize() {
-          return null;
+        credentials: {
+          email: { label: "Email", type: "email" },
+          name: { label: "Name", type: "text" },
+        },
+        async authorize(credentials) {
+          const email =
+            typeof credentials?.email === "string"
+              ? credentials.email.trim().toLowerCase()
+              : "";
+
+          if (!email) {
+            return null;
+          }
+
+          const name =
+            typeof credentials?.name === "string" && credentials.name.trim()
+              ? credentials.name.trim()
+              : "Traveler";
+
+          return {
+            id: `dev-${email}`,
+            email,
+            name,
+          };
         },
       }),
     );
@@ -44,15 +79,25 @@ function buildProviders(env: ReturnType<typeof getServerEnv>): NonNullable<NextA
 
 export function getAuthOptions(): NextAuthOptions {
   const env = getServerEnv();
+  ensureDevAuthEnv(env);
   const providers = buildProviders(env);
+  const usesCredentialsFallback =
+    providers.length === 1 && providers[0]?.id === "credentials";
   const hasMongo = Boolean(env.MONGODB_URI);
+  const enableDatabaseAuth = hasMongo && !usesCredentialsFallback;
 
   return {
-    ...(hasMongo ? { adapter: MongoDBAdapter(getMongoClientPromise()) } : {}),
+    ...(enableDatabaseAuth ? { adapter: MongoDBAdapter(getMongoClientPromise()) } : {}),
     providers,
-    secret: env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET ?? env.NEXTAUTH_SECRET,
     session: {
-      strategy: hasMongo ? "database" : "jwt",
+      strategy: enableDatabaseAuth ? "database" : "jwt",
+    },
+    pages: {
+      signIn: "/auth/signin",
+      error: "/auth/signin",
+      verifyRequest: "/auth/signin",
+      newUser: "/dashboard",
     },
     callbacks: {
       async session({ session, user, token }) {

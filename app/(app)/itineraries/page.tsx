@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
 import { getAuthSession } from "@/lib/auth/get-session";
 import { listItinerariesService } from "@/modules/itineraries/itinerary.service";
@@ -16,7 +16,7 @@ export default async function ItinerariesPage() {
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-4">Sign in to view your itineraries.</p>
           <Link
-            href="/api/auth/signin"
+            href="/auth/signin"
             className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white"
           >
             Sign In
@@ -48,11 +48,11 @@ export default async function ItinerariesPage() {
               <article key={item.id} className="rounded-xl border border-gray-200 bg-white p-5">
                 <h2 className="font-semibold">{itineraryTitle(item.generatedPlan, "Turkey trip")}</h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  Status: {item.status} • Updated: {new Date(item.updatedAt).toLocaleString()}
+                  Status: {item.status} â€¢ Updated: {new Date(item.updatedAt).toLocaleString()}
                 </p>
                 {parsed ? (
                   <p className="mt-2 text-sm text-gray-700">
-                    {parsed.days.length} days • {parsed.cityOrder.join(" -> ")} • {parsed.totalEstimatedCostTRY} TRY
+                    {parsed.days.length} days â€¢ {parsed.cityOrder.join(" -> ")} â€¢ {parsed.totalEstimatedCostTRY} TRY
                   </p>
                 ) : (
                   <p className="mt-2 text-sm text-gray-700">Stored itinerary data available.</p>

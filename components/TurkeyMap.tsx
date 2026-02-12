@@ -1,6 +1,8 @@
-'use client';
+﻿'use client';
 
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { useMemo, useState } from 'react';
+import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
 
 const MARKERS = [
   { city: 'Istanbul', lat: 41.0082, lon: 28.9784, label: 'Culture & History' },
@@ -10,41 +12,46 @@ const MARKERS = [
   { city: 'Antalya', lat: 36.8969, lon: 30.7133, label: 'Coastal Relaxation' },
 ] as const;
 
-function buildOsmEmbedUrl(lat: number, lon: number) {
-  const latDelta = 1.25;
-  const lonDelta = 1.75;
-
-  const minLat = Math.max(-90, lat - latDelta);
-  const maxLat = Math.min(90, lat + latDelta);
-  const minLon = Math.max(-180, lon - lonDelta);
-  const maxLon = Math.min(180, lon + lonDelta);
-
-  const bbox = `${minLon},${minLat},${maxLon},${maxLat}`;
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
-    bbox,
-  )}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lon}`)}`;
-}
+const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
 
 export default function TurkeyMap() {
   const [selectedCity, setSelectedCity] = useState<(typeof MARKERS)[number]>(MARKERS[0]);
 
-  const embedUrl = useMemo(
-    () => buildOsmEmbedUrl(selectedCity.lat, selectedCity.lon),
-    [selectedCity.lat, selectedCity.lon],
+  const initialViewState = useMemo(
+    () => ({
+      latitude: selectedCity.lat,
+      longitude: selectedCity.lon,
+      zoom: 5.5,
+    }),
+    [selectedCity],
   );
 
   return (
-    <div className="w-full h-full relative bg-white">
-      <iframe
-        title={`Map for ${selectedCity.city}`}
-        src={embedUrl}
-        className="w-full h-full border-0"
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      />
+    <div className="relative h-full w-full overflow-hidden bg-white">
+      <Map
+        key={selectedCity.city}
+        initialViewState={initialViewState}
+        mapStyle={MAP_STYLE}
+        reuseMaps
+        style={{ width: '100%', height: '100%' }}
+      >
+        <NavigationControl position="bottom-right" />
+        {MARKERS.map((marker) => (
+          <Marker key={marker.city} latitude={marker.lat} longitude={marker.lon} anchor="bottom">
+            <button
+              type="button"
+              onClick={() => setSelectedCity(marker)}
+              className={`h-3.5 w-3.5 rounded-full border-2 ${
+                selectedCity.city === marker.city ? 'border-blue-700 bg-blue-500' : 'border-blue-500 bg-white'
+              }`}
+              aria-label={`Focus ${marker.city}`}
+            />
+          </Marker>
+        ))}
+      </Map>
 
-      <div className="absolute top-3 left-3 right-3 rounded-xl bg-white/95 backdrop-blur-sm border border-gray-200 shadow-md p-3">
-        <p className="text-xs font-semibold text-gray-500 mb-2">Free map (OpenStreetMap)</p>
+      <div className="absolute left-3 right-3 top-3 rounded-xl border border-gray-200 bg-white/95 p-3 shadow-md backdrop-blur-sm">
+        <p className="mb-2 text-xs font-semibold text-gray-500">Free map (MapLibre + Carto)</p>
         <div className="flex flex-wrap gap-2">
           {MARKERS.map((marker) => {
             const active = selectedCity.city === marker.city;
@@ -52,10 +59,8 @@ export default function TurkeyMap() {
               <button
                 key={marker.city}
                 onClick={() => setSelectedCity(marker)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                  active
-                    ? 'bg-blue-600 border-blue-600 text-white'
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-blue-50'
+                className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                  active ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-blue-50'
                 }`}
                 aria-label={`Show ${marker.city} on map`}
               >
@@ -64,7 +69,7 @@ export default function TurkeyMap() {
             );
           })}
         </div>
-        <p className="text-xs text-gray-600 mt-2">{selectedCity.label}</p>
+        <p className="mt-2 text-xs text-gray-600">{selectedCity.label}</p>
       </div>
     </div>
   );

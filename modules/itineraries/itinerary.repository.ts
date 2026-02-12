@@ -3,12 +3,13 @@ import { connectToDatabase } from "@/lib/db/mongoose";
 import { ItineraryModel } from "@/modules/itineraries/itinerary.model";
 import { ApiError } from "@/modules/shared/problem";
 import { decodeCursor, encodeCursor } from "@/modules/shared/pagination";
+import { toMongoUserId } from "@/modules/shared/mongo-user-id";
 
 export async function listUserItineraries(userId: string, cursor: string | undefined, limit: number) {
   await connectToDatabase();
 
   const query: Record<string, unknown> = {
-    userId: new Types.ObjectId(userId),
+    userId: toMongoUserId(userId),
   };
 
   const decoded = decodeCursor(cursor);
@@ -30,6 +31,25 @@ export async function listUserItineraries(userId: string, cursor: string | undef
   };
 }
 
+export async function listAllItineraries(cursor: string | undefined, limit: number) {
+  await connectToDatabase();
+
+  const query: Record<string, unknown> = {};
+  const decoded = decodeCursor(cursor);
+  if (decoded?.id && Types.ObjectId.isValid(decoded.id)) {
+    query._id = { $lt: new Types.ObjectId(decoded.id) };
+  }
+
+  const docs = await ItineraryModel.find(query).sort({ _id: -1 }).limit(limit + 1).lean();
+  const hasMore = docs.length > limit;
+  const rows = hasMore ? docs.slice(0, limit) : docs;
+
+  return {
+    data: rows,
+    nextCursor: hasMore ? encodeCursor({ id: rows[rows.length - 1]._id.toString() }) : null,
+  };
+}
+
 export async function createUserItinerary(params: {
   userId: string;
   requestSnapshot: unknown;
@@ -40,7 +60,7 @@ export async function createUserItinerary(params: {
   await connectToDatabase();
 
   const created = await ItineraryModel.create({
-    userId: new Types.ObjectId(params.userId),
+    userId: toMongoUserId(params.userId),
     requestSnapshot: params.requestSnapshot,
     generatedPlan: params.generatedPlan,
     notes: params.notes,
@@ -60,7 +80,7 @@ export async function getUserItineraryById(userId: string, itineraryId: string) 
 
   const doc = await ItineraryModel.findOne({
     _id: new Types.ObjectId(itineraryId),
-    userId: new Types.ObjectId(userId),
+    userId: toMongoUserId(userId),
   }).lean();
 
   if (!doc) {
@@ -85,7 +105,7 @@ export async function updateUserItineraryById(params: {
   const updated = await ItineraryModel.findOneAndUpdate(
     {
       _id: new Types.ObjectId(params.itineraryId),
-      userId: new Types.ObjectId(params.userId),
+      userId: toMongoUserId(params.userId),
     },
     {
       ...(params.notes !== undefined ? { notes: params.notes } : {}),
@@ -111,7 +131,7 @@ export async function deleteUserItineraryById(userId: string, itineraryId: strin
 
   const deleted = await ItineraryModel.findOneAndDelete({
     _id: new Types.ObjectId(itineraryId),
-    userId: new Types.ObjectId(userId),
+    userId: toMongoUserId(userId),
   }).lean();
 
   if (!deleted) {

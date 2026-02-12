@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
 import { getAuthSession } from "@/lib/auth/get-session";
 
@@ -15,7 +15,7 @@ export default async function ProfilePage() {
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="text-gray-700">You are not signed in.</p>
           <Link
-            href="/api/auth/signin"
+            href="/auth/signin"
             className="mt-4 inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white"
           >
             Sign In

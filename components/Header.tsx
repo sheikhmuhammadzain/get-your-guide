@@ -67,9 +67,9 @@ export default function Header() {
             <Globe className="w-6 h-6 stroke-[1.5]" aria-hidden="true" />
             <span className="text-[11px] font-medium hidden md:block">EN/USD $</span>
           </button>
-          <Link href="/profile" className="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View profile">
+          <Link href="/dashboard" className="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View dashboard">
             <User className="w-6 h-6 stroke-[1.5]" aria-hidden="true" />
-            <span className="text-[11px] font-medium hidden md:block">Profile</span>
+            <span className="text-[11px] font-medium hidden md:block">Dashboard</span>
           </Link>
         </nav>
       </div>

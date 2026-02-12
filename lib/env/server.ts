@@ -14,6 +14,7 @@ const envSchema = z.object({
   EXCHANGERATE_API_KEY: z.string().optional(),
   MAPBOX_ACCESS_TOKEN: z.string().optional(),
   SENTRY_DSN: z.string().optional(),
+  ADMIN_EMAILS: z.string().optional(),
 });
 
 let cachedEnv: z.infer<typeof envSchema> | null = null;

@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { getAuthSession } from "@/lib/auth/get-session";
 import { getProductById } from "@/lib/data";
+import { createOrderService } from "@/modules/orders/order.service";
 import { ApiError, fromUnknownError, fromZodError } from "@/modules/shared/problem";
 import { created, problemResponse } from "@/modules/shared/response";
 
@@ -24,6 +26,8 @@ export async function POST(request: Request) {
   const instance = new URL(request.url).pathname;
 
   try {
+    const session = await getAuthSession();
+    const userId = session?.user?.id;
     const body = checkoutSchema.parse(await request.json());
 
     const normalized = body.items.map((item) => {
@@ -33,22 +37,35 @@ export async function POST(request: Request) {
       }
       return {
         productId: product.id,
+        title: product.title,
         quantity: item.quantity,
+        unitPrice: product.price,
+        currency: product.currency,
         lineTotal: product.price * item.quantity,
       };
     });
 
     const total = normalized.reduce((sum, item) => sum + item.lineTotal, 0);
-    const orderId = `GYG-${Date.now()}`;
+    const orderCode = `GYG-${Date.now()}`;
+    const currency = getProductById(normalized[0].productId)?.currency ?? "EUR";
+
+    const order = await createOrderService({
+      userId,
+      customer: body.customer,
+      items: normalized,
+      total,
+      currency,
+      orderCode,
+    });
 
     return created(
       {
-        orderId,
+        orderId: order.orderCode,
         status: "confirmed",
-        total,
-        currency: getProductById(normalized[0].productId)?.currency ?? "EUR",
+        total: order.total,
+        currency: order.currency,
       },
-      `/checkout/success?orderId=${encodeURIComponent(orderId)}`,
+      `/checkout/success?orderId=${encodeURIComponent(order.orderCode)}`,
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
