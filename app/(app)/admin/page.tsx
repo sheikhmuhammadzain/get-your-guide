@@ -1,6 +1,5 @@
 import Link from "next/link";
 import AdminPanelClient from "@/components/admin/AdminPanelClient";
-import PageScaffold from "@/components/PageScaffold";
 import {
   getAdminOverviewService,
   listAdminFeedbackService,
@@ -15,30 +14,33 @@ export default async function AdminPanelPage() {
     await requireAdmin();
   } catch {
     return (
-      <PageScaffold title="Admin Panel" description="Administrator access only.">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6">
-          <p className="mb-3 text-red-900">You do not have permission to view this page.</p>
-          <Link
-            href="/"
-            className="inline-flex rounded-full border border-red-300 px-5 py-2 text-sm font-semibold text-red-800"
-          >
-            Return Home
-          </Link>
-        </div>
-      </PageScaffold>
+      <main className="flex min-h-screen items-center justify-center bg-[#f3f4f7] p-6 text-[#1f2733]">
+        <section className="w-full max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+          <h1 className="text-xl font-semibold text-red-900">Admin Access Required</h1>
+          <p className="mt-2 text-sm text-red-800">You do not have permission to open the admin workspace.</p>
+          <div className="mt-5 flex gap-2">
+            <Link href="/auth/signin" className="rounded-full bg-[#0071eb] px-4 py-2 text-sm font-semibold text-white">
+              Sign In
+            </Link>
+            <Link href="/" className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">
+              Home
+            </Link>
+          </div>
+        </section>
+      </main>
     );
   }
 
   const [overview, users, orders, itineraries, feedback] = await Promise.all([
     getAdminOverviewService(),
-    listAdminUsersService(undefined, 50),
-    listAdminOrdersService(undefined, 50),
-    listAdminItinerariesService(undefined, 50),
-    listAdminFeedbackService(undefined, 50),
+    listAdminUsersService(undefined, 100),
+    listAdminOrdersService(undefined, 100),
+    listAdminItinerariesService(undefined, 100),
+    listAdminFeedbackService(undefined, 100),
   ]);
 
   return (
-    <PageScaffold title="Admin Panel" description="Professional operations console with CRUD workflows.">
+    <main className="min-h-screen bg-[#f3f4f7] text-[#1f2733]">
       <AdminPanelClient
         overview={overview}
         users={users}
@@ -46,6 +48,6 @@ export default async function AdminPanelPage() {
         itineraries={itineraries}
         feedback={feedback}
       />
-    </PageScaffold>
+    </main>
   );
 }

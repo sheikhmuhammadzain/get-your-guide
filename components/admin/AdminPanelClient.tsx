@@ -1,6 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { signOut } from "next-auth/react";
+import {
+  Bell,
+  Building2,
+  ChevronRight,
+  FolderKanban,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Search,
+  Settings2,
+  SlidersHorizontal,
+  Sparkles,
+  Table,
+  Users,
+} from "lucide-react";
+import { type ReactNode, useMemo, useState } from "react";
 
 type AdminTab = "users" | "orders" | "itineraries" | "feedback";
 
@@ -69,31 +86,22 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
   const totals = props.overview.totals;
 
   const filteredUsers = useMemo(
-    () =>
-      users.filter((item) =>
-        `${item.name} ${item.email}`.toLowerCase().includes(search.toLowerCase()),
-      ),
+    () => users.filter((item) => `${item.name} ${item.email}`.toLowerCase().includes(search.toLowerCase())),
     [users, search],
   );
   const filteredOrders = useMemo(
     () =>
-      orders.filter((item) =>
-        `${item.orderCode} ${item.customer.email}`.toLowerCase().includes(search.toLowerCase()),
-      ),
+      orders.filter((item) => `${item.orderCode} ${item.customer.email}`.toLowerCase().includes(search.toLowerCase())),
     [orders, search],
   );
   const filteredItineraries = useMemo(
     () =>
-      itineraries.filter((item) =>
-        `${item.id} ${item.userId} ${item.status}`.toLowerCase().includes(search.toLowerCase()),
-      ),
+      itineraries.filter((item) => `${item.id} ${item.userId} ${item.status}`.toLowerCase().includes(search.toLowerCase())),
     [itineraries, search],
   );
   const filteredFeedback = useMemo(
     () =>
-      feedback.filter((item) =>
-        `${item.category} ${item.email ?? ""} ${item.message}`.toLowerCase().includes(search.toLowerCase()),
-      ),
+      feedback.filter((item) => `${item.category} ${item.email ?? ""} ${item.message}`.toLowerCase().includes(search.toLowerCase())),
     [feedback, search],
   );
 
@@ -111,74 +119,150 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-950 to-slate-800 p-6 text-white shadow-xl">
-        <div className="mb-4">
-          <h2 className="text-2xl font-semibold">Operations Control Center</h2>
-          <p className="text-sm text-slate-300">
-            Manage users, bookings, itineraries, and support feedback from one panel.
-          </p>
-        </div>
-        <div className="grid gap-3 md:grid-cols-5">
-          <StatCard label="Users" value={String(totals.users)} />
-          <StatCard label="Orders" value={String(totals.orders)} />
-          <StatCard label="Itineraries" value={String(totals.itineraries)} />
-          <StatCard label="Feedback" value={String(totals.feedback)} />
-          <StatCard label="Recent Revenue" value={`${totals.recentRevenue} EUR`} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {(["users", "orders", "itineraries", "feedback"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${
-                  activeTab === tab
-                    ? "bg-[#0071eb] text-white"
-                    : "border border-slate-300 bg-white text-slate-700"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+    <div className="flex min-h-screen">
+      <aside className="hidden w-[260px] border-r border-[#e4e7ec] bg-[#f8f9fb] p-4 lg:flex lg:flex-col">
+        <div className="mb-4 flex items-center gap-2 rounded-xl px-2 py-1">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={`Search ${activeTab}...`}
-            className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-blue-600 md:w-80"
-          />
+          <p className="text-lg font-semibold tracking-tight text-[#1f2733]">Adminy</p>
         </div>
 
-        {message ? (
-          <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
-            {message}
+        <div className="mb-4 rounded-xl border border-[#e4e7ec] bg-white px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-[#667085]">
+            <Search className="h-4 w-4" />
+            <span>Search workspace...</span>
           </div>
-        ) : null}
+        </div>
 
-        {activeTab === "users" ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-500">
-                  <th className="px-3 py-2">Name</th>
-                  <th className="px-3 py-2">Email</th>
-                  <th className="px-3 py-2">Verified</th>
-                  <th className="px-3 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-slate-100">
-                    <td className="px-3 py-3 font-medium">{user.name}</td>
-                    <td className="px-3 py-3">{user.email}</td>
-                    <td className="px-3 py-3">{user.emailVerified ? "Yes" : "No"}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex gap-2">
-                        <button
+        <nav className="space-y-1 text-sm">
+          <SidebarItem icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" active />
+          <SidebarItem icon={<FolderKanban className="h-4 w-4" />} label="Projects" />
+          <SidebarItem icon={<Table className="h-4 w-4" />} label="Reports" />
+          <SidebarItem icon={<Users className="h-4 w-4" />} label="Companies" />
+          <SidebarItem icon={<Building2 className="h-4 w-4" />} label="People" />
+        </nav>
+
+        <div className="mt-6 space-y-1 border-t border-[#e4e7ec] pt-4 text-sm">
+          <SidebarItem icon={<HelpCircle className="h-4 w-4" />} label="Help center" />
+          <SidebarItem icon={<Bell className="h-4 w-4" />} label="Notifications" />
+        </div>
+
+        <div className="mt-auto rounded-xl border border-[#e4e7ec] bg-white p-3">
+          <p className="text-xs text-[#98a2b3]">Signed in as</p>
+          <p className="text-sm font-semibold text-[#1f2733]">admin@gmail.com</p>
+          <button
+            onClick={() => void signOut({ callbackUrl: "/auth/signin" })}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-[#f3c7cd] bg-[#fff5f6] px-3 py-2 text-xs font-semibold text-[#b42318]"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <section className="flex-1 p-4 md:p-6">
+        <div className="mx-auto max-w-[1200px]">
+          <header className="mb-4 rounded-2xl border border-[#e4e7ec] bg-white px-4 py-3 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm text-[#667085]">
+                <Link href="/" className="font-medium text-[#344054]">Workspace</Link>
+                <ChevronRight className="h-4 w-4" />
+                <span>Projects</span>
+                <ChevronRight className="h-4 w-4" />
+                <span className="font-semibold text-[#1f2733]">Admin Operations</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="rounded-lg border border-[#e4e7ec] bg-white px-3 py-2 text-xs font-semibold text-[#344054]">Manage</button>
+                <button className="rounded-lg border border-[#e4e7ec] bg-white px-3 py-2 text-xs font-semibold text-[#344054]">Share</button>
+              </div>
+            </div>
+          </header>
+
+          <section className="mb-4 rounded-2xl border border-[#e4e7ec] bg-white p-4 shadow-sm md:p-5">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-3xl font-bold tracking-tight text-[#101828]">Admin Command Center</p>
+                <p className="mt-1 text-sm text-[#667085]">Unified control for users, bookings, itineraries, and support operations.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                <KpiCard label="Users" value={String(totals.users)} tone="blue" />
+                <KpiCard label="Orders" value={String(totals.orders)} tone="green" />
+                <KpiCard label="Itineraries" value={String(totals.itineraries)} tone="amber" />
+                <KpiCard label="Revenue" value={`${totals.recentRevenue} EUR`} tone="slate" />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-[#e4e7ec] bg-[#fbfcfd] p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-semibold text-[#1f2733]">Consolidated trend</p>
+                <div className="flex items-center gap-1">
+                  <button className="rounded-md bg-white px-2 py-1 text-xs text-[#475467]">D</button>
+                  <button className="rounded-md bg-white px-2 py-1 text-xs text-[#475467]">W</button>
+                  <button className="rounded-md bg-[#e8f1ff] px-2 py-1 text-xs font-semibold text-[#175cd3]">M</button>
+                </div>
+              </div>
+              <svg viewBox="0 0 900 180" className="h-[160px] w-full">
+                <rect x="0" y="0" width="900" height="180" fill="transparent" />
+                <path d="M0 98 C80 70, 150 130, 240 96 C330 62, 390 108, 470 86 C540 67, 620 98, 700 80 C770 64, 835 86, 900 74" stroke="#0ba5ec" strokeWidth="3" fill="none" />
+                <path d="M0 128 C80 110, 150 146, 240 132 C330 120, 390 148, 470 128 C540 118, 620 140, 700 130 C770 122, 835 141, 900 136" stroke="#f04438" strokeWidth="3" fill="none" />
+              </svg>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[#e4e7ec] bg-white p-4 shadow-sm md:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {(["users", "orders", "itineraries", "feedback"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${
+                      activeTab === tab ? "bg-[#101828] text-white" : "border border-[#d0d5dd] bg-white text-[#475467]"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto">
+                <button className="inline-flex items-center gap-1 rounded-lg border border-[#d0d5dd] bg-white px-3 py-2 text-xs font-semibold text-[#344054]">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filter
+                </button>
+                <button className="inline-flex items-center gap-1 rounded-lg border border-[#d0d5dd] bg-white px-3 py-2 text-xs font-semibold text-[#344054]">
+                  <Settings2 className="h-4 w-4" />
+                  Sort
+                </button>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98a2b3]" />
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder={`Search ${activeTab}`}
+                    className="h-10 w-[220px] rounded-lg border border-[#d0d5dd] pl-9 pr-3 text-sm outline-none focus:border-[#175cd3]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {message ? (
+              <div className="mb-3 rounded-lg border border-[#b2ddff] bg-[#f0f9ff] px-3 py-2 text-sm text-[#175cd3]">{message}</div>
+            ) : null}
+
+            <div className="overflow-hidden rounded-xl border border-[#eaecf0]">
+              <div className="max-h-[460px] overflow-auto">
+                {activeTab === "users" ? (
+                  <ResourceTable
+                    headers={["Name", "Email", "Verified", "Actions"]}
+                    rows={filteredUsers.map((user) => [
+                      user.name,
+                      user.email,
+                      user.emailVerified ? "Yes" : "No",
+                      <div key={user.id} className="flex gap-2">
+                        <ActionButton
+                          label="Edit"
                           disabled={busyId === user.id}
                           onClick={() =>
                             runAction(
@@ -191,27 +275,21 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                                   body: JSON.stringify({ name }),
                                 });
                                 if (!response.ok) throw new Error("User update failed");
-                                setUsers((prev) =>
-                                  prev.map((item) => (item.id === user.id ? { ...item, name } : item)),
-                                );
+                                setUsers((prev) => prev.map((item) => (item.id === user.id ? { ...item, name } : item)));
                               },
                               user.id,
                               "User updated",
                             )
                           }
-                          className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
-                        >
-                          Edit
-                        </button>
-                        <button
+                        />
+                        <DangerButton
+                          label="Delete"
                           disabled={busyId === user.id}
                           onClick={() =>
                             runAction(
                               async () => {
                                 if (!window.confirm("Delete user and related records?")) return;
-                                const response = await fetch(`/api/v1/admin/users/${user.id}`, {
-                                  method: "DELETE",
-                                });
+                                const response = await fetch(`/api/v1/admin/users/${user.id}`, { method: "DELETE" });
                                 if (!response.ok) throw new Error("User delete failed");
                                 setUsers((prev) => prev.filter((item) => item.id !== user.id));
                               },
@@ -219,43 +297,23 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                               "User deleted",
                             )
                           }
-                          className="rounded-full border border-red-300 px-3 py-1 text-xs font-semibold text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+                        />
+                      </div>,
+                    ])}
+                  />
+                ) : null}
 
-        {activeTab === "orders" ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-500">
-                  <th className="px-3 py-2">Order</th>
-                  <th className="px-3 py-2">Customer</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Total</th>
-                  <th className="px-3 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-slate-100">
-                    <td className="px-3 py-3 font-medium">{order.orderCode}</td>
-                    <td className="px-3 py-3">{order.customer.email}</td>
-                    <td className="px-3 py-3 capitalize">{order.status}</td>
-                    <td className="px-3 py-3">
-                      {order.total} {order.currency}
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex gap-2">
-                        <button
+                {activeTab === "orders" ? (
+                  <ResourceTable
+                    headers={["Order", "Customer", "Status", "Value", "Actions"]}
+                    rows={filteredOrders.map((order) => [
+                      order.orderCode,
+                      order.customer.email,
+                      order.status,
+                      `${order.total} ${order.currency}`,
+                      <div key={order.id} className="flex gap-2">
+                        <ActionButton
+                          label="Toggle"
                           disabled={busyId === order.id}
                           onClick={() =>
                             runAction(
@@ -267,152 +325,96 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                                   body: JSON.stringify({ status: nextStatus }),
                                 });
                                 if (!response.ok) throw new Error("Order update failed");
-                                setOrders((prev) =>
-                                  prev.map((item) =>
-                                    item.id === order.id ? { ...item, status: nextStatus } : item,
-                                  ),
-                                );
+                                setOrders((prev) => prev.map((it) => (it.id === order.id ? { ...it, status: nextStatus } : it)));
                               },
                               order.id,
                               "Order updated",
                             )
                           }
-                          className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
-                        >
-                          Toggle Status
-                        </button>
-                        <button
+                        />
+                        <DangerButton
+                          label="Delete"
                           disabled={busyId === order.id}
                           onClick={() =>
                             runAction(
                               async () => {
                                 if (!window.confirm("Delete this order?")) return;
-                                const response = await fetch(`/api/v1/admin/orders/${order.id}`, {
-                                  method: "DELETE",
-                                });
+                                const response = await fetch(`/api/v1/admin/orders/${order.id}`, { method: "DELETE" });
                                 if (!response.ok) throw new Error("Order delete failed");
-                                setOrders((prev) => prev.filter((item) => item.id !== order.id));
+                                setOrders((prev) => prev.filter((it) => it.id !== order.id));
                               },
                               order.id,
                               "Order deleted",
                             )
                           }
-                          className="rounded-full border border-red-300 px-3 py-1 text-xs font-semibold text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+                        />
+                      </div>,
+                    ])}
+                  />
+                ) : null}
 
-        {activeTab === "itineraries" ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-500">
-                  <th className="px-3 py-2">Itinerary ID</th>
-                  <th className="px-3 py-2">User ID</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Updated</th>
-                  <th className="px-3 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItineraries.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100">
-                    <td className="px-3 py-3 font-mono text-xs">{item.id}</td>
-                    <td className="px-3 py-3 font-mono text-xs">{item.userId}</td>
-                    <td className="px-3 py-3 capitalize">{item.status}</td>
-                    <td className="px-3 py-3">{new Date(item.updatedAt).toLocaleString()}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex gap-2">
-                        <button
+                {activeTab === "itineraries" ? (
+                  <ResourceTable
+                    headers={["Itinerary ID", "User ID", "Status", "Updated", "Actions"]}
+                    rows={filteredItineraries.map((item) => [
+                      <span key={`${item.id}-id`} className="font-mono text-xs">{item.id}</span>,
+                      <span key={`${item.id}-uid`} className="font-mono text-xs">{item.userId}</span>,
+                      item.status,
+                      new Date(item.updatedAt).toLocaleString(),
+                      <div key={item.id} className="flex gap-2">
+                        <ActionButton
+                          label="Cycle"
                           disabled={busyId === item.id}
                           onClick={() =>
                             runAction(
                               async () => {
-                                const status =
-                                  item.status === "saved"
-                                    ? "archived"
-                                    : item.status === "archived"
-                                      ? "draft"
-                                      : "saved";
+                                const status = item.status === "saved" ? "archived" : item.status === "archived" ? "draft" : "saved";
                                 const response = await fetch(`/api/v1/admin/itineraries/${item.id}`, {
                                   method: "PATCH",
                                   headers: { "content-type": "application/json" },
                                   body: JSON.stringify({ status }),
                                 });
                                 if (!response.ok) throw new Error("Itinerary update failed");
-                                setItineraries((prev) =>
-                                  prev.map((row) => (row.id === item.id ? { ...row, status } : row)),
-                                );
+                                setItineraries((prev) => prev.map((it) => (it.id === item.id ? { ...it, status } : it)));
                               },
                               item.id,
                               "Itinerary updated",
                             )
                           }
-                          className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
-                        >
-                          Cycle Status
-                        </button>
-                        <button
+                        />
+                        <DangerButton
+                          label="Delete"
                           disabled={busyId === item.id}
                           onClick={() =>
                             runAction(
                               async () => {
                                 if (!window.confirm("Delete itinerary?")) return;
-                                const response = await fetch(`/api/v1/admin/itineraries/${item.id}`, {
-                                  method: "DELETE",
-                                });
+                                const response = await fetch(`/api/v1/admin/itineraries/${item.id}`, { method: "DELETE" });
                                 if (!response.ok) throw new Error("Itinerary delete failed");
-                                setItineraries((prev) => prev.filter((row) => row.id !== item.id));
+                                setItineraries((prev) => prev.filter((it) => it.id !== item.id));
                               },
                               item.id,
                               "Itinerary deleted",
                             )
                           }
-                          className="rounded-full border border-red-300 px-3 py-1 text-xs font-semibold text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+                        />
+                      </div>,
+                    ])}
+                  />
+                ) : null}
 
-        {activeTab === "feedback" ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-slate-500">
-                  <th className="px-3 py-2">Category</th>
-                  <th className="px-3 py-2">Email</th>
-                  <th className="px-3 py-2">Rating</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Message</th>
-                  <th className="px-3 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredFeedback.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100 align-top">
-                    <td className="px-3 py-3 capitalize">{item.category}</td>
-                    <td className="px-3 py-3">{item.email ?? "Anonymous"}</td>
-                    <td className="px-3 py-3">{item.rating ?? "-"}</td>
-                    <td className="px-3 py-3 capitalize">{item.status}</td>
-                    <td className="max-w-sm px-3 py-3 text-slate-700">{item.message}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex gap-2">
-                        <button
+                {activeTab === "feedback" ? (
+                  <ResourceTable
+                    headers={["Category", "Email", "Rating", "Status", "Message", "Actions"]}
+                    rows={filteredFeedback.map((item) => [
+                      item.category,
+                      item.email ?? "Anonymous",
+                      item.rating ?? "-",
+                      item.status,
+                      <span key={`${item.id}-msg`} className="line-clamp-2 max-w-[320px]">{item.message}</span>,
+                      <div key={item.id} className="flex gap-2">
+                        <ActionButton
+                          label="Toggle"
                           disabled={busyId === item.id}
                           onClick={() =>
                             runAction(
@@ -424,56 +426,117 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                                   body: JSON.stringify({ status }),
                                 });
                                 if (!response.ok) throw new Error("Feedback update failed");
-                                setFeedback((prev) =>
-                                  prev.map((row) => (row.id === item.id ? { ...row, status } : row)),
-                                );
+                                setFeedback((prev) => prev.map((it) => (it.id === item.id ? { ...it, status } : it)));
                               },
                               item.id,
                               "Feedback updated",
                             )
                           }
-                          className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700"
-                        >
-                          Toggle Status
-                        </button>
-                        <button
+                        />
+                        <DangerButton
+                          label="Delete"
                           disabled={busyId === item.id}
                           onClick={() =>
                             runAction(
                               async () => {
                                 if (!window.confirm("Delete feedback entry?")) return;
-                                const response = await fetch(`/api/v1/admin/feedback/${item.id}`, {
-                                  method: "DELETE",
-                                });
+                                const response = await fetch(`/api/v1/admin/feedback/${item.id}`, { method: "DELETE" });
                                 if (!response.ok) throw new Error("Feedback delete failed");
-                                setFeedback((prev) => prev.filter((row) => row.id !== item.id));
+                                setFeedback((prev) => prev.filter((it) => it.id !== item.id));
                               },
                               item.id,
                               "Feedback deleted",
                             )
                           }
-                          className="rounded-full border border-red-300 px-3 py-1 text-xs font-semibold text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+                        />
+                      </div>,
+                    ])}
+                  />
+                ) : null}
+              </div>
+            </div>
+          </section>
+        </div>
       </section>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function SidebarItem({ icon, label, active = false }: { icon: ReactNode; label: string; active?: boolean }) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-3">
-      <p className="text-xs uppercase tracking-wide text-slate-300">{label}</p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+    <button
+      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left ${
+        active ? "bg-white font-semibold text-[#101828] shadow-sm" : "text-[#667085] hover:bg-white"
+      }`}
+    >
+      {icon}
+      {label}
+      {active ? <span className="ml-auto rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] text-[#3538cd]">Live</span> : null}
+    </button>
+  );
+}
+
+function KpiCard({ label, value, tone }: { label: string; value: string; tone: "blue" | "green" | "amber" | "slate" }) {
+  const toneClass =
+    tone === "blue"
+      ? "border-[#b2ddff] bg-[#f0f9ff]"
+      : tone === "green"
+      ? "border-[#abefc6] bg-[#ecfdf3]"
+      : tone === "amber"
+      ? "border-[#fde272] bg-[#fffaeb]"
+      : "border-[#d0d5dd] bg-[#f9fafb]";
+
+  return (
+    <div className={`min-w-[120px] rounded-xl border px-3 py-2 ${toneClass}`}>
+      <p className="text-xs text-[#667085]">{label}</p>
+      <p className="text-base font-semibold text-[#101828]">{value}</p>
     </div>
+  );
+}
+
+function ResourceTable({ headers, rows }: { headers: string[]; rows: Array<Array<ReactNode>> }) {
+  return (
+    <table className="min-w-full text-sm">
+      <thead>
+        <tr className="border-b border-[#eaecf0] bg-[#f9fafb] text-left text-[#667085]">
+          {headers.map((header) => (
+            <th key={header} className="px-3 py-2 font-medium">{header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, rowIndex) => (
+          <tr key={rowIndex} className="border-b border-[#f2f4f7] text-[#344054]">
+            {row.map((cell, cellIndex) => (
+              <td key={`${rowIndex}-${cellIndex}`} className="px-3 py-3 align-middle">{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function ActionButton({ label, disabled, onClick }: { label: string; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className="rounded-md border border-[#d0d5dd] bg-white px-2.5 py-1 text-xs font-semibold text-[#344054] disabled:opacity-50"
+    >
+      {label}
+    </button>
+  );
+}
+
+function DangerButton({ label, disabled, onClick }: { label: string; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className="rounded-md border border-[#fecdca] bg-[#fff5f4] px-2.5 py-1 text-xs font-semibold text-[#b42318] disabled:opacity-50"
+    >
+      {label}
+    </button>
   );
 }
