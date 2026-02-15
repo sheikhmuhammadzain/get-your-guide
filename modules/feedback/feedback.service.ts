@@ -1,8 +1,11 @@
 import {
   countFeedback,
   createFeedback,
+  deleteFeedbackById,
   listFeedback,
+  updateFeedbackById,
 } from "@/modules/feedback/feedback.repository";
+import { ApiError } from "@/modules/shared/problem";
 
 function mapFeedback(doc: {
   _id: { toString(): string };
@@ -49,4 +52,22 @@ export async function listFeedbackService(cursor: string | undefined, limit: num
 
 export async function countFeedbackService() {
   return countFeedback();
+}
+
+export async function updateFeedbackService(
+  feedbackId: string,
+  patch: { status?: "new" | "reviewed"; message?: string; rating?: number },
+) {
+  const updated = await updateFeedbackById(feedbackId, patch);
+  if (!updated) {
+    throw new ApiError(404, "FEEDBACK_NOT_FOUND", "Feedback not found");
+  }
+  return mapFeedback(updated);
+}
+
+export async function deleteFeedbackService(feedbackId: string) {
+  const deleted = await deleteFeedbackById(feedbackId);
+  if (!deleted) {
+    throw new ApiError(404, "FEEDBACK_NOT_FOUND", "Feedback not found");
+  }
 }

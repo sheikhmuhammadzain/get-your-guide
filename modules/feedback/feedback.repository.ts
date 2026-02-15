@@ -48,3 +48,37 @@ export async function countFeedback() {
   await connectToDatabase();
   return FeedbackModel.countDocuments();
 }
+
+export async function updateFeedbackById(
+  feedbackId: string,
+  patch: { status?: "new" | "reviewed"; message?: string; rating?: number },
+) {
+  await connectToDatabase();
+
+  if (!Types.ObjectId.isValid(feedbackId)) {
+    return null;
+  }
+
+  const updated = await FeedbackModel.findOneAndUpdate(
+    { _id: new Types.ObjectId(feedbackId) },
+    {
+      ...(patch.status ? { status: patch.status } : {}),
+      ...(patch.message !== undefined ? { message: patch.message } : {}),
+      ...(patch.rating !== undefined ? { rating: patch.rating } : {}),
+    },
+    { new: true },
+  ).lean();
+
+  return updated;
+}
+
+export async function deleteFeedbackById(feedbackId: string) {
+  await connectToDatabase();
+
+  if (!Types.ObjectId.isValid(feedbackId)) {
+    return false;
+  }
+
+  const deleted = await FeedbackModel.findOneAndDelete({ _id: new Types.ObjectId(feedbackId) }).lean();
+  return Boolean(deleted);
+}

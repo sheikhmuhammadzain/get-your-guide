@@ -1,9 +1,11 @@
 import {
   createUserItinerary,
+  deleteAnyItineraryById,
   deleteUserItineraryById,
   getUserItineraryById,
   listAllItineraries,
   listUserItineraries,
+  updateAnyItineraryById,
   updateUserItineraryById,
 } from "@/modules/itineraries/itinerary.repository";
 
@@ -100,4 +102,27 @@ export async function updateItineraryService(params: {
 
 export async function deleteItineraryService(userId: string, itineraryId: string) {
   await deleteUserItineraryById(userId, itineraryId);
+}
+
+export async function updateAdminItineraryService(params: {
+  itineraryId: string;
+  notes?: string;
+  status?: "draft" | "saved" | "archived";
+}) {
+  const doc = await updateAnyItineraryById(params);
+  return {
+    id: doc._id.toString(),
+    userId: doc.userId.toString(),
+    requestSnapshot: doc.requestSnapshot,
+    generatedPlan: doc.generatedPlan,
+    notes: doc.notes,
+    status: doc.status,
+    version: doc.version,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  };
+}
+
+export async function deleteAdminItineraryService(itineraryId: string) {
+  await deleteAnyItineraryById(itineraryId);
 }

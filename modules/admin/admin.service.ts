@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
+import { listFeedbackService } from "@/modules/feedback/feedback.service";
 import { FeedbackModel } from "@/modules/feedback/feedback.model";
 import { listAllItinerariesService } from "@/modules/itineraries/itinerary.service";
 import { ItineraryModel } from "@/modules/itineraries/itinerary.model";
@@ -64,4 +65,8 @@ export async function listAdminOrdersService(cursor: string | undefined, limit: 
 
 export async function listAdminItinerariesService(cursor: string | undefined, limit: number) {
   return listAllItinerariesService(cursor, limit);
+}
+
+export async function listAdminFeedbackService(cursor: string | undefined, limit: number) {
+  return listFeedbackService(cursor, limit);
 }

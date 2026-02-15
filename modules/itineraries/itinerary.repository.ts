@@ -138,3 +138,47 @@ export async function deleteUserItineraryById(userId: string, itineraryId: strin
     throw new ApiError(404, "ITINERARY_NOT_FOUND", "Itinerary not found");
   }
 }
+
+export async function updateAnyItineraryById(params: {
+  itineraryId: string;
+  notes?: string;
+  status?: "draft" | "saved" | "archived";
+}) {
+  await connectToDatabase();
+
+  if (!Types.ObjectId.isValid(params.itineraryId)) {
+    throw new ApiError(400, "INVALID_ITINERARY_ID", "Invalid itinerary id format");
+  }
+
+  const updated = await ItineraryModel.findOneAndUpdate(
+    { _id: new Types.ObjectId(params.itineraryId) },
+    {
+      ...(params.notes !== undefined ? { notes: params.notes } : {}),
+      ...(params.status ? { status: params.status } : {}),
+      $inc: { version: 1 },
+    },
+    { new: true },
+  ).lean();
+
+  if (!updated) {
+    throw new ApiError(404, "ITINERARY_NOT_FOUND", "Itinerary not found");
+  }
+
+  return updated;
+}
+
+export async function deleteAnyItineraryById(itineraryId: string) {
+  await connectToDatabase();
+
+  if (!Types.ObjectId.isValid(itineraryId)) {
+    throw new ApiError(400, "INVALID_ITINERARY_ID", "Invalid itinerary id format");
+  }
+
+  const deleted = await ItineraryModel.findOneAndDelete({
+    _id: new Types.ObjectId(itineraryId),
+  }).lean();
+
+  if (!deleted) {
+    throw new ApiError(404, "ITINERARY_NOT_FOUND", "Itinerary not found");
+  }
+}

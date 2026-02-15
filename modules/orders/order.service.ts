@@ -1,8 +1,10 @@
 import {
   createOrder,
+  deleteOrderById,
   getOrderByCode,
   listAllOrders,
   listUserOrders,
+  updateOrderById,
   type CreateOrderInput,
 } from "@/modules/orders/order.repository";
 
@@ -63,4 +65,16 @@ export async function listAllOrdersService(cursor: string | undefined, limit: nu
 export async function getOrderByCodeService(orderCode: string) {
   const doc = await getOrderByCode(orderCode);
   return mapOrder(doc);
+}
+
+export async function updateOrderService(
+  orderId: string,
+  patch: { status?: "confirmed" | "cancelled"; customerEmail?: string },
+) {
+  const doc = await updateOrderById(orderId, patch);
+  return mapOrder(doc);
+}
+
+export async function deleteOrderService(orderId: string) {
+  await deleteOrderById(orderId);
 }

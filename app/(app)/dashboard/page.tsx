@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import PageScaffold from "@/components/PageScaffold";
 import { getAuthSession } from "@/lib/auth/get-session";
 import { isAdminSession } from "@/modules/auth/guards";
@@ -17,6 +18,10 @@ export default async function DashboardPage() {
     session = await getAuthSession();
     userId = session?.user?.id;
     admin = userId ? await isAdminSession() : false;
+
+    if (admin) {
+      redirect("/admin");
+    }
 
     data = userId
       ? await Promise.all([
@@ -99,7 +104,7 @@ function DashboardContent({
               <div key={order.id} className="rounded-lg border border-gray-100 p-3 text-sm">
                 <p className="font-medium">{order.orderCode}</p>
                 <p className="text-gray-600">
-                  {order.total} {order.currency} â€¢ {new Date(order.createdAt).toLocaleString()}
+                  {order.total} {order.currency} | {new Date(order.createdAt).toLocaleString()}
                 </p>
               </div>
             ))}
@@ -107,29 +112,29 @@ function DashboardContent({
         </section>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {itineraries.data.map((itinerary) => {
-        const parsed = parseGeneratedItinerary(itinerary.generatedPlan);
-        return (
-          <article key={itinerary.id} className="rounded-xl border border-gray-200 p-5">
-            <h2 className="font-bold mb-2">{itineraryTitle(itinerary.generatedPlan, "Trip")}</h2>
-            <p className="text-sm text-gray-500 mb-2">
-              Status: {itinerary.status} â€¢ Updated: {new Date(itinerary.updatedAt).toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-3">{itinerary.notes || "No notes"}</p>
-            {parsed ? (
-              <p className="text-xs text-gray-500 mb-3">
-                {parsed.days.length} days â€¢ {parsed.totalEstimatedCostTRY} TRY
+          const parsed = parseGeneratedItinerary(itinerary.generatedPlan);
+          return (
+            <article key={itinerary.id} className="rounded-xl border border-gray-200 p-5">
+              <h2 className="mb-2 font-bold">{itineraryTitle(itinerary.generatedPlan, "Trip")}</h2>
+              <p className="mb-2 text-sm text-gray-500">
+                Status: {itinerary.status} | Updated: {new Date(itinerary.updatedAt).toLocaleString()}
               </p>
-            ) : null}
-            <Link
-              href={`/itineraries/${itinerary.id}`}
-              className="inline-flex items-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
-            >
-              Open itinerary
-            </Link>
-          </article>
-        );
+              <p className="mb-3 line-clamp-3 text-sm text-gray-600">{itinerary.notes || "No notes"}</p>
+              {parsed ? (
+                <p className="mb-3 text-xs text-gray-500">
+                  {parsed.days.length} days | {parsed.totalEstimatedCostTRY} TRY
+                </p>
+              ) : null}
+              <Link
+                href={`/itineraries/${itinerary.id}`}
+                className="inline-flex items-center rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
+              >
+                Open itinerary
+              </Link>
+            </article>
+          );
         })}
       </div>
     </>

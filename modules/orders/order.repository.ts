@@ -91,3 +91,42 @@ export async function getOrderByCode(orderCode: string) {
   }
   return doc;
 }
+
+export async function updateOrderById(
+  orderId: string,
+  patch: { status?: "confirmed" | "cancelled"; customerEmail?: string },
+) {
+  await connectToDatabase();
+
+  if (!Types.ObjectId.isValid(orderId)) {
+    throw new ApiError(400, "INVALID_ORDER_ID", "Invalid order id format");
+  }
+
+  const updated = await OrderModel.findOneAndUpdate(
+    { _id: new Types.ObjectId(orderId) },
+    {
+      ...(patch.status ? { status: patch.status } : {}),
+      ...(patch.customerEmail ? { "customer.email": patch.customerEmail.toLowerCase() } : {}),
+    },
+    { new: true },
+  ).lean();
+
+  if (!updated) {
+    throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
+
+  return updated;
+}
+
+export async function deleteOrderById(orderId: string) {
+  await connectToDatabase();
+
+  if (!Types.ObjectId.isValid(orderId)) {
+    throw new ApiError(400, "INVALID_ORDER_ID", "Invalid order id format");
+  }
+
+  const deleted = await OrderModel.findOneAndDelete({ _id: new Types.ObjectId(orderId) }).lean();
+  if (!deleted) {
+    throw new ApiError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
+}

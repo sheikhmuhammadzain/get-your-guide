@@ -1,6 +1,13 @@
 import { ObjectId } from "mongodb";
 import { getMongoClientPromise } from "@/lib/db/mongodb-client";
+import { connectToDatabase } from "@/lib/db/mongoose";
+import { ChatSessionModel } from "@/modules/ai/chat-session.model";
+import { FeedbackModel } from "@/modules/feedback/feedback.model";
+import { ItineraryModel } from "@/modules/itineraries/itinerary.model";
+import { OrderModel } from "@/modules/orders/order.model";
 import { decodeCursor, encodeCursor } from "@/modules/shared/pagination";
+import { toMongoUserId } from "@/modules/shared/mongo-user-id";
+import { UserPreferenceModel } from "@/modules/users/user-preference.model";
 
 interface UserCollectionRow {
   _id: ObjectId;
@@ -8,6 +15,7 @@ interface UserCollectionRow {
   email?: string | null;
   image?: string | null;
   emailVerified?: Date | null;
+  passwordHash?: string;
 }
 
 export async function listUsers(cursor: string | undefined, limit: number) {
@@ -35,4 +43,52 @@ export async function countUsers() {
   const client = await getMongoClientPromise();
   const db = client.db();
   return db.collection("users").countDocuments();
+}
+
+export async function updateUserById(userId: string, patch: { name?: string; email?: string }) {
+  if (!ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  const client = await getMongoClientPromise();
+  const db = client.db();
+  const collection = db.collection<UserCollectionRow>("users");
+
+  const updated = await collection.findOneAndUpdate(
+    { _id: new ObjectId(userId) },
+    {
+      $set: {
+        ...(patch.name !== undefined ? { name: patch.name } : {}),
+        ...(patch.email !== undefined ? { email: patch.email.toLowerCase() } : {}),
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: "after" },
+  );
+
+  return updated;
+}
+
+export async function deleteUserById(userId: string) {
+  if (!ObjectId.isValid(userId)) {
+    return false;
+  }
+
+  const client = await getMongoClientPromise();
+  const db = client.db();
+  const collection = db.collection<UserCollectionRow>("users");
+
+  const deleted = await collection.deleteOne({ _id: new ObjectId(userId) });
+
+  await connectToDatabase();
+  const mongoUserId = toMongoUserId(userId);
+  await Promise.all([
+    ItineraryModel.deleteMany({ userId: mongoUserId }),
+    OrderModel.deleteMany({ userId: mongoUserId }),
+    UserPreferenceModel.deleteMany({ userId: mongoUserId }),
+    ChatSessionModel.deleteMany({ userId: mongoUserId }),
+    FeedbackModel.deleteMany({ userId: mongoUserId }),
+  ]);
+
+  return deleted.deletedCount > 0;
 }
