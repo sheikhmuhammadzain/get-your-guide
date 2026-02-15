@@ -1,13 +1,20 @@
 
 'use client';
 
-import { Heart, ShoppingCart, Globe, User } from 'lucide-react';
+import { Heart, ShoppingCart, Globe, User, LogOut, ChevronDown, Shield, Settings, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { signOut } from 'next-auth/react';
 
 export default function Header() {
   const [showSearch, setShowSearch] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const accountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +25,68 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAccountState() {
+      setAccountLoading(true);
+      try {
+        const meResponse = await fetch('/api/v1/users/me', { cache: 'no-store' });
+        if (!meResponse.ok) {
+          if (!cancelled) {
+            setIsAuthenticated(false);
+            setIsAdmin(false);
+            setUserName(null);
+          }
+          return;
+        }
+
+        const meBody = (await meResponse.json()) as { name?: string | null };
+        if (!cancelled) {
+          setIsAuthenticated(true);
+          setUserName(meBody.name ?? null);
+        }
+
+        const adminResponse = await fetch('/api/v1/admin/overview', { cache: 'no-store' });
+        if (!cancelled) {
+          setIsAdmin(adminResponse.ok);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsAuthenticated(false);
+          setIsAdmin(false);
+          setUserName(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAccountLoading(false);
+        }
+      }
+    }
+
+    void loadAccountState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    function onPointerDown(event: MouseEvent) {
+      if (!accountRef.current) return;
+      if (!accountRef.current.contains(event.target as Node)) {
+        setAccountOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, []);
+
+  async function handleLogout() {
+    await signOut({ callbackUrl: '/auth/signin' });
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
@@ -67,10 +136,87 @@ export default function Header() {
             <Globe className="w-6 h-6 stroke-[1.5]" aria-hidden="true" />
             <span className="text-[11px] font-medium hidden md:block">EN/USD $</span>
           </button>
-          <Link href="/dashboard" className="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View dashboard">
-            <User className="w-6 h-6 stroke-[1.5]" aria-hidden="true" />
-            <span className="text-[11px] font-medium hidden md:block">Dashboard</span>
-          </Link>
+          <div ref={accountRef} className="relative">
+            <button
+              onClick={() => setAccountOpen((prev) => !prev)}
+              className="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group"
+              aria-label="Open account menu"
+            >
+              <div className="flex items-center gap-1">
+                <User className="w-6 h-6 stroke-[1.5]" aria-hidden="true" />
+                <ChevronDown className="h-3.5 w-3.5 hidden md:block" aria-hidden="true" />
+              </div>
+              <span className="text-[11px] font-medium hidden md:block">Dashboard</span>
+            </button>
+
+            {accountOpen ? (
+              <div className="absolute right-0 top-[58px] w-64 rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl">
+                {accountLoading ? (
+                  <p className="px-3 py-2 text-sm text-gray-500">Loading...</p>
+                ) : isAuthenticated ? (
+                  <>
+                    <div className="mb-1 rounded-xl bg-gray-50 px-3 py-2">
+                      <p className="text-xs uppercase tracking-wide text-gray-500">Signed in</p>
+                      <p className="text-sm font-semibold text-gray-900">{userName ?? 'Traveler'}</p>
+                    </div>
+
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <User className="h-4 w-4" />
+                      Dashboard
+                    </Link>
+                    <Link
+                      href="/user"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Settings className="h-4 w-4" />
+                      User Panel
+                    </Link>
+                    {isAdmin ? (
+                      <Link
+                        href="/admin"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Shield className="h-4 w-4" />
+                        Admin Panel
+                      </Link>
+                    ) : null}
+                    <button
+                      onClick={() => void handleLogout()}
+                      className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-700 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <User className="h-4 w-4" />
+                      Create Account
+                    </Link>
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
         </nav>
       </div>
 
