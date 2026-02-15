@@ -15,7 +15,7 @@ export function getMongoClientPromise() {
     throw new Error("MONGODB_URI is required for auth adapter");
   }
 
-  const client = new MongoClient(MONGODB_URI);
+  const client = new MongoClient(MONGODB_URI, { dbName: "travel_planner" });
   globalThis.mongoClientPromise = client.connect();
   return globalThis.mongoClientPromise;
 }
