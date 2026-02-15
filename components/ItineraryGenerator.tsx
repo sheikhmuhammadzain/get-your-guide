@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Sparkles, MapPin, DollarSign, Clock, Save, CloudSun, Banknote, Bus } from 'lucide-react';
 import Link from 'next/link';
@@ -240,11 +240,11 @@ export default function ItineraryGenerator() {
   return (
     <div className="w-full bg-blue-50/50 p-6 md:p-8 rounded-2xl border border-blue-100 shadow-lg mb-8">
       <div className="flex items-center gap-4 mb-6">
-        <div className="p-2.5 bg-[#0071eb] text-white rounded-xl shadow-md">
+        <div className="p-2.5 bg-brand text-white rounded-xl shadow-md">
           <Sparkles className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-[#1a1b1d]">AI Itinerary Planner</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-text-heading">AI Itinerary Planner</h2>
           <p className="text-sm text-gray-500">Plan your perfect trip to Turkey in seconds</p>
         </div>
       </div>
@@ -390,7 +390,7 @@ export default function ItineraryGenerator() {
         <button
           disabled={loading}
           onClick={handleGenerate}
-          className="bg-[#0071eb] hover:bg-[#005fb8] disabled:opacity-70 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 transform active:scale-95 duration-100"
+          className="bg-brand hover:bg-brand-hover disabled:opacity-70 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 transform active:scale-95 duration-100"
         >
           <Sparkles className="w-5 h-5 fill-current" />
           {loading ? 'Generating...' : 'Generate My Itinerary'}
@@ -400,7 +400,7 @@ export default function ItineraryGenerator() {
           <button
             disabled={saving}
             onClick={handleSave}
-            className="bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-70 text-[#1a1b1d] font-bold py-3 px-6 rounded-full shadow-sm transition-all flex items-center gap-2"
+            className="bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-70 text-text-heading font-bold py-3 px-6 rounded-full shadow-sm transition-all flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Itinerary'}

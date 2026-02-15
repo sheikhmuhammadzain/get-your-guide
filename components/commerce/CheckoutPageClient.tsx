@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -62,7 +62,7 @@ export default function CheckoutPageClient() {
     return (
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
         <p className="text-gray-700">Your cart is empty. Add at least one tour before checkout.</p>
-        <Link href="/" className="mt-4 inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+        <Link href="/" className="mt-4 inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
           Browse tours
         </Link>
       </div>
@@ -107,7 +107,7 @@ export default function CheckoutPageClient() {
 
         <button
           disabled={isSubmitting}
-          className="mt-6 rounded-full bg-[#0071eb] px-6 py-2.5 font-semibold text-white disabled:opacity-70"
+          className="mt-6 rounded-full bg-brand px-6 py-2.5 font-semibold text-white disabled:opacity-70"
         >
           {isSubmitting ? "Processing..." : `Pay ${formattedTotal}`}
         </button>
@@ -133,3 +133,4 @@ export default function CheckoutPageClient() {
     </div>
   );
 }
+

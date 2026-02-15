@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import type { BudgetLevel, InterestTag } from "@/types/travel";
@@ -125,7 +125,7 @@ export default function UserPreferencesCard({ initial }: UserPreferencesCardProp
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white disabled:opacity-70"
+          className="rounded-full bg-brand px-5 py-2 font-semibold text-white disabled:opacity-70"
         >
           {saving ? "Saving..." : "Save preferences"}
         </button>
@@ -134,3 +134,4 @@ export default function UserPreferencesCard({ initial }: UserPreferencesCardProp
     </form>
   );
 }
+

@@ -26,7 +26,7 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist }:
         />
 
         {product.badge ? (
-          <div className="absolute left-3 top-3 rounded-sm bg-[#1952a1] px-2 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
+          <div className="absolute left-3 top-3 rounded-sm bg-brand-hover px-2 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
             {product.badge}
           </div>
         ) : null}
@@ -52,7 +52,7 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist }:
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-3 text-[16px] font-bold leading-[1.4] text-[#1a1b1d] transition-colors group-hover:text-[#0071eb]">
+        <h3 className="line-clamp-3 text-[16px] font-bold leading-[1.4] text-text-heading transition-colors group-hover:text-brand">
           {product.title}
         </h3>
 
@@ -67,7 +67,7 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist }:
         </div>
 
         <div className="mt-auto flex items-center gap-1 pt-2">
-          <div className="flex text-[#FFC800]">
+          <div className="flex text-yellow-400">
             {[...Array(5)].map((_, i) => (
               <svg
                 key={`${product.id}-${i}`}
@@ -85,12 +85,12 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist }:
 
         <div className="mt-1">
           <span className="text-xs text-gray-500">From </span>
-          <span className="font-bold text-[#1a1b1d]">{formatPrice(product)}</span>
+          <span className="font-bold text-text-heading">{formatPrice(product)}</span>
           <span className="text-xs text-gray-500"> per person</span>
         </div>
 
         {product.bookedText ? (
-          <div className="mt-3 w-fit rounded bg-[#f0f6ff] px-2 py-1.5 text-xs font-medium text-[#0071eb]">
+          <div className="mt-3 w-fit rounded bg-surface-brand-soft px-2 py-1.5 text-xs font-medium text-brand">
             {product.bookedText}
           </div>
         ) : null}
@@ -98,3 +98,4 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist }:
     </Link>
   );
 }
+

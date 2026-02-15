@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -80,7 +80,7 @@ export default function WishlistPageClient() {
         <p className="mt-2 text-sm text-gray-600">Browse curated attractions and add favorites as you plan.</p>
         <Link
           href="/attractions"
-          className="mt-4 inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white"
+          className="mt-4 inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white"
         >
           Explore Attractions
         </Link>
@@ -94,7 +94,7 @@ export default function WishlistPageClient() {
         <article key={product.id} className="rounded-xl border border-gray-200 bg-white p-4">
           <h2 className="text-lg font-semibold">{product.title}</h2>
           <p className="mt-1 text-sm text-gray-600">
-            {product.location} • {product.duration}
+            {product.location} â€¢ {product.duration}
           </p>
           <p className="mt-2 text-sm text-gray-700">{product.summary}</p>
           <p className="mt-3 text-sm font-semibold">{formatPrice(product)}</p>
@@ -117,3 +117,4 @@ export default function WishlistPageClient() {
     </div>
   );
 }
+

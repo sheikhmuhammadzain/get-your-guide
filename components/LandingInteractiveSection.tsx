@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import dynamic from 'next/dynamic';
 import { ArrowUpDown, Info, Map, Sparkles } from 'lucide-react';
@@ -32,7 +32,7 @@ export default function LandingInteractiveSection() {
       <ItineraryGenerator />
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-        <h1 className="text-[#1a1b1d] font-bold text-xl md:text-2xl flex items-baseline gap-2">
+        <h1 className="text-text-heading font-bold text-xl md:text-2xl flex items-baseline gap-2">
           <span className="text-gray-500 font-normal">Showing results for:</span>
           <span>Turkey AI Itinerary</span>
         </h1>
@@ -46,7 +46,7 @@ export default function LandingInteractiveSection() {
             {showMap ? 'Hide Map' : 'Show Map'}
           </button>
 
-          <div className="flex items-center gap-1 text-sm text-[#1a1b1d]">
+          <div className="flex items-center gap-1 text-sm text-text-heading">
             <Info className="w-4 h-4" />
             <span className="mr-1">Sort by:</span>
             <span className="font-bold border-b border-dotted border-black cursor-pointer flex items-center gap-1">
@@ -78,3 +78,4 @@ export default function LandingInteractiveSection() {
     </>
   );
 }
+

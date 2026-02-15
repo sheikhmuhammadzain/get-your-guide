@@ -17,7 +17,7 @@ export default async function ItinerariesPage() {
           <p className="mb-4">Sign in to view your itineraries.</p>
           <Link
             href="/auth/signin"
-            className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white"
+            className="inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white"
           >
             Sign In
           </Link>
@@ -36,7 +36,7 @@ export default async function ItinerariesPage() {
       {page.data.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-3">No itineraries saved yet.</p>
-          <Link href="/planner" className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+          <Link href="/planner" className="inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
             Generate First Itinerary
           </Link>
         </div>
@@ -73,3 +73,4 @@ export default async function ItinerariesPage() {
     </PageScaffold>
   );
 }
+

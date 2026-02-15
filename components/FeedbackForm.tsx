@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 
@@ -105,7 +105,7 @@ export default function FeedbackForm() {
         <button
           type="submit"
           disabled={sending}
-          className="rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white disabled:opacity-70"
+          className="rounded-full bg-brand px-5 py-2 font-semibold text-white disabled:opacity-70"
         >
           {sending ? "Sending..." : "Submit feedback"}
         </button>
@@ -114,3 +114,4 @@ export default function FeedbackForm() {
     </form>
   );
 }
+

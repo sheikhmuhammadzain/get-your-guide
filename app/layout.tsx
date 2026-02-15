@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { BRAND_HEX } from "@/theme/colors";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -107,7 +108,7 @@ export default function RootLayout({
         <link rel="canonical" href="https://getyourguide.com" />
         <link rel="icon" href="/globe.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <meta name="theme-color" content="#FF5533" />
+        <meta name="theme-color" content={BRAND_HEX} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

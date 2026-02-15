@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
 import { listAttractionsService } from "@/modules/attractions/attraction.service";
 
@@ -46,7 +46,7 @@ export default async function AttractionsPage({
             className="h-10 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
           />
         </label>
-        <button className="md:col-span-3 w-fit rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+        <button className="md:col-span-3 w-fit rounded-full bg-brand px-5 py-2 font-semibold text-white">
           Apply Filters
         </button>
       </form>
@@ -61,7 +61,7 @@ export default async function AttractionsPage({
             <article key={item.id} className="rounded-xl border border-gray-200 bg-white p-5">
               <h2 className="text-lg font-semibold">{item.name}</h2>
               <p className="mt-1 text-sm text-gray-600">
-                {item.city} • {item.avgDurationMin} min • {item.ticketPriceRange?.min ?? 0}-
+                {item.city} â€¢ {item.avgDurationMin} min â€¢ {item.ticketPriceRange?.min ?? 0}-
                 {item.ticketPriceRange?.max ?? 0} {item.ticketPriceRange?.currency ?? "TRY"}
               </p>
               <p className="mt-3 text-sm text-gray-700">{item.description}</p>
@@ -79,3 +79,4 @@ export default async function AttractionsPage({
     </PageScaffold>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { formatPrice, getProductById } from "@/lib/data";
@@ -13,7 +13,7 @@ export default function CartPageClient() {
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
         <p className="text-gray-700">Your cart is currently empty.</p>
         <p className="mt-2 text-sm text-gray-600">Open a tour and add it to continue to checkout.</p>
-        <Link href="/" className="mt-4 inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+        <Link href="/" className="mt-4 inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
           Browse tours
         </Link>
       </div>
@@ -38,7 +38,7 @@ export default function CartPageClient() {
             <article key={item.productId} className="rounded-xl border border-gray-200 bg-white p-5">
               <h2 className="font-semibold">{product.title}</h2>
               <p className="mt-1 text-sm text-gray-600">
-                {product.location} • {product.duration}
+                {product.location} â€¢ {product.duration}
               </p>
               <p className="mt-2 text-sm text-gray-700">{formatPrice(product)} per traveler</p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -69,10 +69,11 @@ export default function CartPageClient() {
         <p className="text-sm text-gray-600">Subtotal</p>
         <p className="mt-1 text-2xl font-bold">{formattedTotal}</p>
         <p className="mt-2 text-xs text-gray-500">Taxes and final payment details will be shown on checkout.</p>
-        <Link href="/checkout" className="mt-5 inline-flex w-full justify-center rounded-full bg-[#0071eb] px-5 py-2.5 font-semibold text-white">
+        <Link href="/checkout" className="mt-5 inline-flex w-full justify-center rounded-full bg-brand px-5 py-2.5 font-semibold text-white">
           Continue to checkout
         </Link>
       </aside>
     </div>
   );
 }
+

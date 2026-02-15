@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
@@ -60,7 +60,7 @@ export default function AuthCard({ mode }: AuthCardProps) {
 
   return (
     <div className="mx-auto w-full max-w-md rounded-xl md:rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-md md:shadow-lg">
-      <h1 className="text-2xl font-bold text-[#1a1b1d]">{title}</h1>
+      <h1 className="text-2xl font-bold text-text-heading">{title}</h1>
       <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -103,7 +103,7 @@ export default function AuthCard({ mode }: AuthCardProps) {
 
         <button
           disabled={isLoading}
-          className="w-full rounded-full bg-[#0071eb] px-5 py-2.5 font-semibold text-white disabled:opacity-70"
+          className="w-full rounded-full bg-brand px-5 py-2.5 font-semibold text-white disabled:opacity-70"
         >
           {isLoading ? "Please wait..." : isSignup ? "Create Account" : "Sign In"}
         </button>
@@ -113,10 +113,11 @@ export default function AuthCard({ mode }: AuthCardProps) {
 
       <div className="mt-5 text-sm text-gray-600">
         {isSignup ? "Already have an account?" : "New here?"}{" "}
-        <Link href={isSignup ? "/auth/signin" : "/auth/signup"} className="font-semibold text-[#0071eb]">
+        <Link href={isSignup ? "/auth/signin" : "/auth/signup"} className="font-semibold text-brand">
           {isSignup ? "Sign in" : "Create account"}
         </Link>
       </div>
     </div>
   );
 }
+

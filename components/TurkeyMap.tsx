@@ -3,6 +3,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useMemo, useState } from 'react';
 import Map, { Layer, Marker, NavigationControl, Source } from 'react-map-gl/maplibre';
+import { MAP_ROUTE_HEX } from '@/theme/colors';
 
 const MARKERS = [
   { city: 'Istanbul', lat: 41.0082, lon: 28.9784, label: 'Culture & History' },
@@ -13,6 +14,7 @@ const MARKERS = [
 ] as const;
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+const MAP_ROUTE_COLOR = MAP_ROUTE_HEX;
 
 function getDistanceKm(from: { lat: number; lon: number }, to: { lat: number; lon: number }) {
   const earthRadiusKm = 6371;
@@ -129,7 +131,7 @@ export default function TurkeyMap() {
               id="route-line-layer"
               type="line"
               paint={{
-                'line-color': '#0b6bcb',
+                'line-color': MAP_ROUTE_COLOR,
                 'line-width': 3,
                 'line-opacity': 0.75,
               }}

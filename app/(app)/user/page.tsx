@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
 import UserPreferencesCard from "@/components/UserPreferencesCard";
 import { getAuthSession } from "@/lib/auth/get-session";
@@ -17,7 +17,7 @@ export default async function UserPanelPage() {
       <PageScaffold title="User Panel" description="Sign in to access your dashboard and account activity.">
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-4">You are not authenticated.</p>
-          <Link href="/auth/signin" className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+          <Link href="/auth/signin" className="inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
             Sign In
           </Link>
         </div>

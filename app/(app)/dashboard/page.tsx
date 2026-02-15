@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageScaffold from "@/components/PageScaffold";
 import { getAuthSession } from "@/lib/auth/get-session";
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-4">Sign in to view your saved trips.</p>
           <Link
-            className="inline-flex items-center rounded-full bg-[#0071eb] px-5 py-2 text-white font-semibold"
+            className="inline-flex items-center rounded-full bg-brand px-5 py-2 text-white font-semibold"
             href="/auth/signin"
           >
             Sign In
@@ -76,7 +76,7 @@ function DashboardContent({
     return (
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
         <p className="mb-3">No saved itineraries yet.</p>
-        <Link href="/planner" className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+        <Link href="/planner" className="inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
           Create itinerary
         </Link>
       </div>
@@ -90,7 +90,7 @@ function DashboardContent({
           Open User Panel
         </Link>
         {isAdmin ? (
-          <Link href="/admin" className="inline-flex rounded-full bg-[#0071eb] px-4 py-2 text-sm font-semibold text-white">
+          <Link href="/admin" className="inline-flex rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white">
             Open Admin Panel
           </Link>
         ) : null}

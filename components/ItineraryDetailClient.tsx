@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -127,7 +127,7 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
           <button
             disabled={isSaving}
             onClick={() => void updateItinerary()}
-            className="rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white disabled:opacity-70"
+            className="rounded-full bg-brand px-5 py-2 font-semibold text-white disabled:opacity-70"
           >
             {isSaving ? "Saving..." : "Save Changes"}
           </button>
@@ -148,3 +148,4 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
     </section>
   );
 }
+

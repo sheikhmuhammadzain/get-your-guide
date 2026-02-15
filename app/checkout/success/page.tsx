@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
 
 export default async function CheckoutSuccessPage({
@@ -21,7 +21,7 @@ export default async function CheckoutSuccessPage({
           A confirmation email with traveler details and itinerary references has been sent.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link href="/dashboard" className="rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+          <Link href="/dashboard" className="rounded-full bg-brand px-5 py-2 font-semibold text-white">
             Open Dashboard
           </Link>
           <Link href="/" className="rounded-full border border-gray-300 px-5 py-2 font-semibold text-gray-700">
@@ -32,3 +32,4 @@ export default async function CheckoutSuccessPage({
     </PageScaffold>
   );
 }
+

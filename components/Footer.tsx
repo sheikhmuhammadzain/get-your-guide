@@ -1,11 +1,11 @@
-
+﻿
 import { Facebook, Twitter, Instagram, Youtube, Linkedin, Globe, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1a1b1d] text-white pt-16 pb-8 text-sm">
+    <footer className="bg-text-heading text-white pt-16 pb-8 text-sm">
        <div className="max-w-[1320px] mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
              
@@ -43,7 +43,7 @@ export default function Footer() {
              <div>
                 <h4 className="font-bold text-gray-200 mb-4 uppercase tracking-wider text-xs">Mobile</h4>
                 <div className="flex flex-col gap-3">
-                   <button className="flex items-center gap-3 bg-[#2d2e30] hover:bg-[#3d3e40] px-4 py-2 rounded-lg transition-colors border border-gray-700 w-fit">
+                   <button className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors border border-gray-700 w-fit">
                       <Image
                         src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
                         alt="App Store"
@@ -53,7 +53,7 @@ export default function Footer() {
                         unoptimized
                       />
                    </button>
-                   <button className="flex items-center gap-3 bg-[#2d2e30] hover:bg-[#3d3e40] px-4 py-2 rounded-lg transition-colors border border-gray-700 w-fit">
+                   <button className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors border border-gray-700 w-fit">
                       <Image
                         src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                         alt="Google Play"
@@ -90,3 +90,4 @@ export default function Footer() {
     </footer>
   );
 }
+

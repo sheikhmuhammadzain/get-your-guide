@@ -1,4 +1,4 @@
-
+﻿
 'use client';
 
 import { Heart, ShoppingCart, Globe, User, LogOut, ChevronDown, Shield, Settings, LogIn } from 'lucide-react';
@@ -155,7 +155,7 @@ export default function Header() {
               aria-label="Search destination"
               className="flex-1 h-full outline-none text-gray-700 placeholder-gray-500 font-medium text-[15px]"
             />
-              <button type="submit" aria-label="Plan trip" className="h-9 px-6 bg-[#0071eb] hover:bg-[#005fb8] text-white font-bold rounded-full transition-colors text-[14px] flex items-center gap-2">
+              <button type="submit" aria-label="Plan trip" className="h-9 px-6 bg-brand hover:bg-brand-hover text-white font-bold rounded-full transition-colors text-[14px] flex items-center gap-2">
                 Search
               </button>
             </form>
@@ -298,3 +298,4 @@ export default function Header() {
     </header>
   );
 }
+

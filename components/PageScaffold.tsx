@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 
@@ -10,7 +10,7 @@ interface PageScaffoldProps {
 
 export default function PageScaffold({ title, description, children }: PageScaffoldProps) {
   return (
-    <div className="min-h-screen bg-white text-[#1a1b1d]">
+    <div className="min-h-screen bg-white text-text-heading">
       <Header />
       <main className="mx-auto max-w-[1200px] px-4 py-10 md:px-6">
         <h1 className="mb-2 text-3xl font-bold">{title}</h1>
@@ -21,3 +21,4 @@ export default function PageScaffold({ title, description, children }: PageScaff
     </div>
   );
 }
+

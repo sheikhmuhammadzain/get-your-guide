@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { MessageSquare, X, Send, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -79,7 +79,7 @@ export default function AiAssistant() {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
       {isOpen && (
         <div className="w-[350px] h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-200">
-          <div className="bg-[#0071eb] p-4 flex items-center justify-between text-white">
+          <div className="bg-brand p-4 flex items-center justify-between text-white">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-white/20 rounded-lg">
                 <Sparkles className="w-5 h-5" />
@@ -109,14 +109,14 @@ export default function AiAssistant() {
               >
                 {message.role === "assistant" && (
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200">
-                    <Sparkles className="w-4 h-4 text-[#0071eb]" />
+                    <Sparkles className="w-4 h-4 text-brand" />
                   </div>
                 )}
                 <div
                   className={
                     message.role === "assistant"
                       ? "bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm text-sm text-gray-700"
-                      : "bg-[#0071eb] text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-sm"
+                      : "bg-brand text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-sm"
                   }
                 >
                   {message.content}
@@ -143,7 +143,7 @@ export default function AiAssistant() {
               <button
                 disabled={isSending}
                 onClick={() => void sendMessage()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[#0071eb] text-white rounded-lg hover:bg-[#005fb8] transition-colors disabled:opacity-70"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors disabled:opacity-70"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -154,10 +154,11 @@ export default function AiAssistant() {
 
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="h-14 w-14 bg-[#0071eb] hover:bg-[#005fb8] text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group relative"
+        className="h-14 w-14 bg-brand hover:bg-brand-hover text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group relative"
       >
         {isOpen ? <X className="w-7 h-7" /> : <MessageSquare className="w-7 h-7 fill-current" />}
       </button>
     </div>
   );
 }
+

@@ -16,7 +16,7 @@ export default async function ProfilePage() {
           <p className="text-gray-700">You are not signed in.</p>
           <Link
             href="/auth/signin"
-            className="mt-4 inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white"
+            className="mt-4 inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white"
           >
             Sign In
           </Link>
@@ -45,3 +45,4 @@ export default async function ProfilePage() {
     </PageScaffold>
   );
 }
+

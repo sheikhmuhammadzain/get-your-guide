@@ -18,7 +18,7 @@ export default async function ItineraryDetailPage({
       <PageScaffold title="Itinerary Detail" description="Sign in to manage your saved itinerary.">
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-4">You need to sign in to view this itinerary.</p>
-          <Link href="/auth/signin" className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+          <Link href="/auth/signin" className="inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
             Sign In
           </Link>
         </div>
@@ -38,7 +38,7 @@ export default async function ItineraryDetailPage({
       <PageScaffold title="Itinerary Not Found" description="The requested itinerary could not be loaded.">
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-4">This itinerary does not exist or you do not have access.</p>
-          <Link href="/dashboard" className="inline-flex rounded-full bg-[#0071eb] px-5 py-2 font-semibold text-white">
+          <Link href="/dashboard" className="inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white">
             Return to Dashboard
           </Link>
         </div>
