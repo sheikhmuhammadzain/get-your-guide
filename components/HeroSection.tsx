@@ -43,7 +43,7 @@ export default function HeroSection() {
             </form>
           </div>
 
-          <div className="relative md:absolute md:top-[60%] left-0 md:left-6 w-full max-w-sm pt-2 md:pt-[10%]">
+          <div className="relative w-full max-w-sm pt-2 md:pt-4">
             <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl max-w-[400px]">
               <div className="mb-3">
                 <h3 className="text-white font-bold text-lg drop-shadow-md mb-2">Continue planning your trip</h3>
