@@ -105,7 +105,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="canonical" href="https://getyourguide.com" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/globe.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#FF5533" />
         <script

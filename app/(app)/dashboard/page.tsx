@@ -7,20 +7,37 @@ import { listItinerariesService } from "@/modules/itineraries/itinerary.service"
 import { listUserOrdersService } from "@/modules/orders/order.service";
 
 export default async function DashboardPage() {
-  const session = await getAuthSession();
-  const userId = session?.user?.id;
-  const admin = userId ? await isAdminSession() : false;
+  let session: Awaited<ReturnType<typeof getAuthSession>> | null = null;
+  let userId: string | undefined;
+  let admin = false;
+  let data: [Awaited<ReturnType<typeof listItinerariesService>>, Awaited<ReturnType<typeof listUserOrdersService>>] | null = null;
+  let loadError = false;
 
-  const data = userId
-    ? await Promise.all([
-        listItinerariesService(userId, undefined, 20),
-        listUserOrdersService(userId, undefined, 5),
-      ])
-    : null;
+  try {
+    session = await getAuthSession();
+    userId = session?.user?.id;
+    admin = userId ? await isAdminSession() : false;
+
+    data = userId
+      ? await Promise.all([
+          listItinerariesService(userId, undefined, 20),
+          listUserOrdersService(userId, undefined, 5),
+        ])
+      : null;
+  } catch {
+    loadError = true;
+  }
 
   return (
     <PageScaffold title="Dashboard" description="Review and manage your saved itineraries.">
-      {!session?.user?.id ? (
+      {loadError ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+          <p className="mb-2 font-medium text-amber-900">Dashboard data could not be loaded.</p>
+          <p className="text-sm text-amber-800">
+            This usually means a server configuration issue in the deployed environment. Check deployment logs and database/auth environment variables.
+          </p>
+        </div>
+      ) : !session?.user?.id ? (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
           <p className="mb-4">Sign in to view your saved trips.</p>
           <Link
