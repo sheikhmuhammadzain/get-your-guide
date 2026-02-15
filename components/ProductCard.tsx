@@ -1,13 +1,17 @@
-﻿import Image from "next/image";
+﻿"use client";
+
+import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { formatPrice, type Product } from "@/lib/data";
 
 interface ProductCardProps {
   product: Product;
+  isWishlisted: boolean;
+  onToggleWishlist: (productId: string) => void;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, isWishlisted, onToggleWishlist }: ProductCardProps) {
   return (
     <Link
       href={`/products/${product.id}`}
@@ -29,11 +33,21 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <button
           type="button"
-          onClick={(event) => event.preventDefault()}
-          className="absolute right-3 top-3 z-10 rounded-full bg-white p-2 shadow-sm transition-colors hover:bg-gray-50"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onToggleWishlist(product.id);
+          }}
+          className={`absolute right-3 top-3 z-10 rounded-full p-2 shadow-sm transition-colors ${
+            isWishlisted ? "bg-red-50 hover:bg-red-100" : "bg-white hover:bg-gray-50"
+          }`}
           aria-label={`Save ${product.title} to wishlist`}
         >
-          <Heart className="h-5 w-5 stroke-[1.5] text-gray-700" />
+          <Heart
+            className={`h-5 w-5 stroke-[1.8] ${
+              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
+            }`}
+          />
         </button>
       </div>
 

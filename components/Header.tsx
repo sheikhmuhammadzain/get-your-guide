@@ -15,6 +15,7 @@ export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const accountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -85,6 +86,44 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', onPointerDown);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWishlistCount() {
+      try {
+        const response = await fetch('/api/v1/wishlist', { cache: 'no-store' });
+        if (!response.ok) {
+          if (!cancelled) {
+            setWishlistCount(0);
+          }
+          return;
+        }
+
+        const body = (await response.json()) as { items?: string[] };
+        if (!cancelled) {
+          setWishlistCount(body.items?.length ?? 0);
+        }
+      } catch {
+        if (!cancelled) {
+          setWishlistCount(0);
+        }
+      }
+    }
+
+    function onWishlistChanged(event: Event) {
+      const custom = event as CustomEvent<{ items?: string[] }>;
+      setWishlistCount(custom.detail?.items?.length ?? 0);
+    }
+
+    void loadWishlistCount();
+    window.addEventListener('wishlist:changed', onWishlistChanged as EventListener);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('wishlist:changed', onWishlistChanged as EventListener);
+    };
+  }, []);
+
   async function handleLogout() {
     await signOut({ callbackUrl: '/auth/signin' });
   }
@@ -126,7 +165,19 @@ export default function Header() {
         {/* Navigation Actions */}
         <nav className="flex items-center gap-2 sm:gap-2 md:gap-6" aria-label="Main navigation">
           <Link href="/wishlist" className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View wishlist">
-            <Heart className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" aria-hidden="true" />
+            <div className="relative">
+              <Heart
+                className={`w-5 h-5 md:w-6 md:h-6 stroke-[1.6] ${
+                  wishlistCount > 0 ? 'fill-red-500 text-red-500' : ''
+                }`}
+                aria-hidden="true"
+              />
+              {wishlistCount > 0 ? (
+                <span className="absolute -right-2 -top-1 inline-flex min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              ) : null}
+            </div>
             <span className="text-[11px] font-medium hidden md:block">Wishlist</span>
           </Link>
           <Link href="/cart" className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View cart">
