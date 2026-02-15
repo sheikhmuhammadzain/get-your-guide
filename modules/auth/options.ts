@@ -72,14 +72,13 @@ function buildProviders(env: ReturnType<typeof getServerEnv>): NonNullable<NextA
 
           const client = await getMongoClientPromise();
           const db = client.db();
-          const users = db.collection<{
+          const users = db.collection("users");
+          const existing = await users.findOne<{
             _id: { toString(): string };
             email: string;
             name?: string | null;
             passwordHash?: string;
-          }>("users");
-
-          const existing = await users.findOne({ email });
+          }>({ email });
 
           if (intent === "signup") {
             if (existing) {
