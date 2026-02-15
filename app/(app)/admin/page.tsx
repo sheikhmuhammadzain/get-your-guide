@@ -29,10 +29,11 @@ export default async function AdminPanelPage() {
 
   return (
     <PageScaffold title="Admin Panel" description="System-wide operations, users, orders, and itinerary monitoring.">
-      <section className="mb-6 grid gap-4 md:grid-cols-4">
+      <section className="mb-6 grid gap-4 md:grid-cols-5">
         <MetricCard label="Users" value={String(overview.totals.users)} />
         <MetricCard label="Itineraries" value={String(overview.totals.itineraries)} />
         <MetricCard label="Orders" value={String(overview.totals.orders)} />
+        <MetricCard label="Feedback" value={String(overview.totals.feedback)} />
         <MetricCard label="Recent Revenue" value={`${overview.totals.recentRevenue} EUR`} />
       </section>
 
@@ -79,12 +80,23 @@ export default async function AdminPanelPage() {
       </section>
 
       <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-3 text-lg font-semibold">Best-Practice Skills Applied</h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700">
-          <li>`api-designer`: versioned REST endpoints, pagination, RFC7807 error pattern.</li>
-          <li>`vercel-react-best-practices`: SSR-first panels, parallel server fetches, minimal client islands.</li>
-          <li>Modular architecture: clear separation of route handlers, services, repositories, and models.</li>
-        </ul>
+        <h2 className="mb-4 text-lg font-semibold">Recent Feedback</h2>
+        {overview.recentFeedback.length === 0 ? (
+          <p className="text-sm text-gray-600">No feedback received yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {overview.recentFeedback.map((item) => (
+              <article key={item.id} className="rounded-lg border border-gray-100 p-3 text-sm">
+                <p className="font-medium">
+                  {item.category} {item.rating ? `• ${item.rating}/5` : ""}
+                </p>
+                <p className="text-gray-600">
+                  {item.email ?? "Anonymous"} • {new Date(item.createdAt).toLocaleString()}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </PageScaffold>
   );

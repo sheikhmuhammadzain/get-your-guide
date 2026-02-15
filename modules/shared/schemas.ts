@@ -49,6 +49,7 @@ export const chatRequestSchema = z.object({
 
 export const weatherQuerySchema = z.object({
   city: z.string().trim().min(1),
+  hours: z.coerce.number().int().min(1).max(24).default(6),
 });
 
 export const currencyQuerySchema = z.object({
@@ -60,4 +61,25 @@ export const transportQuerySchema = z.object({
   from: z.string().trim().min(1),
   to: z.string().trim().min(1),
   mode: z.enum(["car", "bus", "flight"]).default("bus"),
+});
+
+export const userPreferencesPatchSchema = z.object({
+  preferredBudget: budgetLevelSchema.optional(),
+  preferredCities: z.array(z.string().trim().min(1)).max(12).optional(),
+  preferredInterests: z.array(interestTagSchema).max(6).optional(),
+  savedMap: z
+    .object({
+      centerLat: z.number().min(35).max(43),
+      centerLon: z.number().min(25).max(45),
+      zoom: z.number().min(3).max(12),
+      highlightedCities: z.array(z.string().trim().min(1)).max(12).default([]),
+    })
+    .optional(),
+});
+
+export const feedbackCreateSchema = z.object({
+  email: z.string().email().optional(),
+  category: z.enum(["ux", "itinerary", "assistant", "realtime", "other"]),
+  message: z.string().trim().min(10).max(2000),
+  rating: z.number().int().min(1).max(5).optional(),
 });

@@ -88,6 +88,12 @@ paths:
           required: true
           schema:
             type: string
+        - in: query
+          name: hours
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 24
       responses:
         "200":
           description: Weather snapshot
@@ -128,6 +134,28 @@ paths:
       responses:
         "200":
           description: Transport estimate
+  /users/me/preferences:
+    get:
+      summary: Get current user preference profile
+      responses:
+        "200":
+          description: User preferences
+    patch:
+      summary: Update current user preference profile
+      responses:
+        "200":
+          description: Updated user preferences
+  /feedback:
+    post:
+      summary: Submit product feedback
+      responses:
+        "201":
+          description: Feedback created
+    get:
+      summary: List feedback (admin)
+      responses:
+        "200":
+          description: Feedback page
 components:
   schemas:
     ItineraryRequest:

@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
+import { FeedbackModel } from "@/modules/feedback/feedback.model";
 import { listAllItinerariesService } from "@/modules/itineraries/itinerary.service";
 import { ItineraryModel } from "@/modules/itineraries/itinerary.model";
 import { OrderModel } from "@/modules/orders/order.model";
@@ -9,12 +10,14 @@ import { countUsers } from "@/modules/users/user.repository";
 export async function getAdminOverviewService() {
   await connectToDatabase();
 
-  const [users, itineraries, orders, recentOrders, recentItineraries] = await Promise.all([
+  const [users, itineraries, orders, feedback, recentOrders, recentItineraries, recentFeedback] = await Promise.all([
     countUsers(),
     ItineraryModel.countDocuments(),
     OrderModel.countDocuments(),
+    FeedbackModel.countDocuments(),
     OrderModel.find({}).sort({ createdAt: -1 }).limit(5).lean(),
     ItineraryModel.find({}).sort({ updatedAt: -1 }).limit(5).lean(),
+    FeedbackModel.find({}).sort({ createdAt: -1 }).limit(5).lean(),
   ]);
 
   const revenue = recentOrders.reduce((sum, item) => sum + (item.total ?? 0), 0);
@@ -24,6 +27,7 @@ export async function getAdminOverviewService() {
       users,
       itineraries,
       orders,
+      feedback,
       recentRevenue: revenue,
     },
     recentOrders: recentOrders.map((item) => ({
@@ -39,6 +43,13 @@ export async function getAdminOverviewService() {
       status: item.status,
       updatedAt: item.updatedAt,
       userId: item.userId.toString(),
+    })),
+    recentFeedback: recentFeedback.map((item) => ({
+      id: item._id.toString(),
+      category: item.category,
+      rating: item.rating ?? null,
+      email: item.email ?? null,
+      createdAt: item.createdAt,
     })),
   };
 }

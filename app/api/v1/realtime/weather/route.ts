@@ -11,9 +11,10 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const query = weatherQuerySchema.parse({
       city: url.searchParams.get("city"),
+      hours: url.searchParams.get("hours") ?? 6,
     });
 
-    const weather = await getWeather(query.city);
+    const weather = await getWeather(query.city, query.hours);
     return ok(weather);
   } catch (error) {
     if (error instanceof z.ZodError) {

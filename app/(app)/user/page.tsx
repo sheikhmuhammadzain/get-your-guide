@@ -1,9 +1,12 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
+import UserPreferencesCard from "@/components/UserPreferencesCard";
 import { getAuthSession } from "@/lib/auth/get-session";
 import { listItinerariesService } from "@/modules/itineraries/itinerary.service";
 import { itineraryTitle } from "@/modules/itineraries/presenter";
 import { listUserOrdersService } from "@/modules/orders/order.service";
+import { getUserPreferencesService } from "@/modules/users/user-preference.service";
+import type { InterestTag } from "@/types/travel";
 
 export default async function UserPanelPage() {
   const session = await getAuthSession();
@@ -22,9 +25,10 @@ export default async function UserPanelPage() {
     );
   }
 
-  const [itineraries, orders] = await Promise.all([
+  const [itineraries, orders, preferences] = await Promise.all([
     listItinerariesService(userId, undefined, 8),
     listUserOrdersService(userId, undefined, 8),
+    getUserPreferencesService(userId),
   ]);
 
   return (
@@ -34,6 +38,14 @@ export default async function UserPanelPage() {
         <StatCard label="Recent orders" value={String(orders.data.length)} />
         <StatCard label="Email" value={session.user?.email ?? "N/A"} mono />
       </section>
+
+      <UserPreferencesCard
+        initial={{
+          preferredBudget: preferences.preferredBudget,
+          preferredCities: preferences.preferredCities,
+          preferredInterests: preferences.preferredInterests as InterestTag[],
+        }}
+      />
 
       <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="mb-4 text-lg font-semibold">Recent Itineraries</h2>
@@ -45,7 +57,7 @@ export default async function UserPanelPage() {
               <article key={item.id} className="rounded-lg border border-gray-100 p-3">
                 <p className="font-medium">{itineraryTitle(item.generatedPlan, "Trip")}</p>
                 <p className="text-xs text-gray-500">
-                  Status: {item.status} â€¢ Updated: {new Date(item.updatedAt).toLocaleString()}
+                  Status: {item.status} | Updated: {new Date(item.updatedAt).toLocaleString()}
                 </p>
               </article>
             ))}
@@ -63,7 +75,7 @@ export default async function UserPanelPage() {
               <article key={order.id} className="rounded-lg border border-gray-100 p-3">
                 <p className="font-medium">{order.orderCode}</p>
                 <p className="text-xs text-gray-500">
-                  {order.total} {order.currency} â€¢ {order.customer.email} â€¢ {new Date(order.createdAt).toLocaleString()}
+                  {order.total} {order.currency} | {order.customer.email} | {new Date(order.createdAt).toLocaleString()}
                 </p>
               </article>
             ))}

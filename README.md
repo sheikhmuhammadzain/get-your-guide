@@ -28,6 +28,8 @@ Modular full-stack Next.js app with MongoDB, NextAuth, versioned APIs, itinerary
 - `GET /api/v1/realtime/weather`
 - `GET /api/v1/realtime/currency`
 - `GET /api/v1/realtime/transport`
+- `GET|PATCH /api/v1/users/me/preferences`
+- `POST /api/v1/feedback`
 - `GET /api/v1/orders`
 - `GET /api/v1/users/me`
 - `GET /api/v1/users/me/dashboard`

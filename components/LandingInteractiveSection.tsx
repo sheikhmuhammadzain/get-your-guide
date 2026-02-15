@@ -69,6 +69,12 @@ export default function LandingInteractiveSection() {
           </div>
         )}
       </div>
+
+      {showMap ? (
+        <div className="mt-5 h-[360px] rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 md:hidden">
+          <TurkeyMap />
+        </div>
+      ) : null}
     </>
   );
 }

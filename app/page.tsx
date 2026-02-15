@@ -6,7 +6,7 @@ import AiAssistantLazy from '@/components/AiAssistantLazy';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white font-[family-name:var(--font-geist-sans)] text-[#1a1b1d]">
+    <div className="min-h-screen bg-white font-sans text-[#1a1b1d]">
       <Header />
 
       <main className="relative">

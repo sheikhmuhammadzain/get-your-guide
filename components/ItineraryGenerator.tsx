@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles, MapPin, DollarSign, Clock, Save, CloudSun, Banknote } from 'lucide-react';
+import { Sparkles, MapPin, DollarSign, Clock, Save, CloudSun, Banknote, Bus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { BudgetLevel, GeneratedItinerary, InterestTag, ItineraryRequest } from '@/types/travel';
@@ -27,6 +27,11 @@ interface WeatherData {
   city: string;
   temperatureC: number;
   description: string;
+  hourly?: Array<{
+    time: string;
+    temperatureC: number;
+    description: string;
+  }>;
 }
 
 interface CurrencyData {
@@ -35,11 +40,22 @@ interface CurrencyData {
   rate: number;
 }
 
+interface TransportData {
+  from: string;
+  to: string;
+  mode: 'car' | 'bus' | 'flight';
+  distanceKm: number;
+  estimatedDurationHours: number;
+  recommendation: string;
+}
+
 export default function ItineraryGenerator() {
   const [destination, setDestination] = useState<string>('istanbul');
   const [duration, setDuration] = useState<string>('4-7');
   const [interest, setInterest] = useState<InterestTag>('culture');
   const [budget, setBudget] = useState<BudgetLevel>('standard');
+  const [transportFrom, setTransportFrom] = useState<string>('istanbul');
+  const [transportMode, setTransportMode] = useState<'car' | 'bus' | 'flight'>('bus');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [realtimeLoading, setRealtimeLoading] = useState(false);
@@ -50,8 +66,51 @@ export default function ItineraryGenerator() {
   const [requestSnapshot, setRequestSnapshot] = useState<ItineraryRequest | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [currency, setCurrency] = useState<CurrencyData | null>(null);
+  const [transport, setTransport] = useState<TransportData | null>(null);
 
   const daysSelected = useMemo(() => DURATION_DAYS[duration] ?? 5, [duration]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUserPreferences() {
+      try {
+        const response = await fetch('/api/v1/users/me/preferences');
+        if (!response.ok) {
+          return;
+        }
+
+        const body = (await response.json()) as {
+          preferredBudget?: BudgetLevel;
+          preferredCities?: string[];
+          preferredInterests?: InterestTag[];
+        };
+
+        if (cancelled) {
+          return;
+        }
+
+        if (body.preferredBudget) {
+          setBudget(body.preferredBudget);
+        }
+        if (body.preferredCities?.[0]) {
+          setDestination(body.preferredCities[0]);
+          setTransportFrom(body.preferredCities[0]);
+        }
+        if (body.preferredInterests?.[0]) {
+          setInterest(body.preferredInterests[0]);
+        }
+      } catch {
+        // Non-blocking personalization fetch.
+      }
+    }
+
+    void loadUserPreferences();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,22 +120,30 @@ export default function ItineraryGenerator() {
 
       try {
         const city = WEATHER_CITY_MAP[destination] ?? destination;
-        const [weatherResponse, currencyResponse] = await Promise.all([
-          fetch(`/api/v1/realtime/weather?city=${encodeURIComponent(city)}`),
+        const [weatherResponse, currencyResponse, transportResponse] = await Promise.all([
+          fetch(`/api/v1/realtime/weather?city=${encodeURIComponent(city)}&hours=6`),
           fetch('/api/v1/realtime/currency?base=USD&target=TRY'),
+          fetch(
+            `/api/v1/realtime/transport?from=${encodeURIComponent(transportFrom)}&to=${encodeURIComponent(
+              destination,
+            )}&mode=${transportMode}`,
+          ),
         ]);
 
         const weatherBody = (await weatherResponse.json()) as WeatherData;
         const currencyBody = (await currencyResponse.json()) as CurrencyData;
+        const transportBody = (await transportResponse.json()) as TransportData;
 
         if (!cancelled) {
           setWeather(weatherResponse.ok ? weatherBody : null);
           setCurrency(currencyResponse.ok ? currencyBody : null);
+          setTransport(transportResponse.ok ? transportBody : null);
         }
       } catch {
         if (!cancelled) {
           setWeather(null);
           setCurrency(null);
+          setTransport(null);
         }
       } finally {
         if (!cancelled) {
@@ -89,7 +156,7 @@ export default function ItineraryGenerator() {
     return () => {
       cancelled = true;
     };
-  }, [destination]);
+  }, [destination, transportFrom, transportMode]);
 
   async function handleGenerate() {
     setLoading(true);
@@ -253,14 +320,47 @@ export default function ItineraryGenerator() {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase text-gray-600">Transport from</span>
+          <select
+            value={transportFrom}
+            onChange={(event) => setTransportFrom(event.target.value)}
+            className="h-10 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
+          >
+            {DESTINATIONS.map((item) => (
+              <option key={`from-${item}`} value={item}>
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase text-gray-600">Transport mode</span>
+          <select
+            value={transportMode}
+            onChange={(event) => setTransportMode(event.target.value as 'car' | 'bus' | 'flight')}
+            className="h-10 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
+          >
+            <option value="bus">Bus</option>
+            <option value="car">Car</option>
+            <option value="flight">Flight</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="rounded-xl border border-blue-100 bg-white p-3 flex items-center gap-3">
           <CloudSun className="w-5 h-5 text-blue-600" />
           <div>
             <p className="text-xs text-gray-500">Weather ({weather?.city ?? WEATHER_CITY_MAP[destination]})</p>
             <p className="text-sm font-semibold">
-              {realtimeLoading ? 'Loading...' : weather ? `${Math.round(weather.temperatureC)}°C, ${weather.description}` : 'Unavailable'}
+              {realtimeLoading ? 'Loading...' : weather ? `${Math.round(weather.temperatureC)}C, ${weather.description}` : 'Unavailable'}
             </p>
+            {weather?.hourly?.[0] ? (
+              <p className="text-xs text-gray-500">Next: {Math.round(weather.hourly[0].temperatureC)}C at {new Date(weather.hourly[0].time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+            ) : null}
           </div>
         </div>
 
@@ -271,6 +371,17 @@ export default function ItineraryGenerator() {
             <p className="text-sm font-semibold">
               {realtimeLoading ? 'Loading...' : currency ? `1 ${currency.base} = ${currency.rate.toFixed(2)} ${currency.target}` : 'Unavailable'}
             </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-blue-100 bg-white p-3 flex items-center gap-3">
+          <Bus className="w-5 h-5 text-blue-600" />
+          <div>
+            <p className="text-xs text-gray-500">Transport ({transportFrom} to {destination})</p>
+            <p className="text-sm font-semibold">
+              {realtimeLoading ? 'Loading...' : transport ? `${transport.distanceKm} km, ~${transport.estimatedDurationHours}h` : 'Unavailable'}
+            </p>
+            {transport?.recommendation ? <p className="text-xs text-gray-500">{transport.recommendation}</p> : null}
           </div>
         </div>
       </div>
