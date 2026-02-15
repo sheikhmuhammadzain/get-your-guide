@@ -21,7 +21,7 @@ export default function AuthCard({ mode }: AuthCardProps) {
     ? "Create your travel planner account with email and password."
     : "Access your trips and dashboard with email and password.";
 
-  const callbackUrl = useMemo(() => "/dashboard", []);
+  const callbackUrl = useMemo(() => (isSignup ? "/dashboard" : "/dashboard"), [isSignup]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +41,18 @@ export default function AuthCard({ mode }: AuthCardProps) {
       setError(isSignup ? "Account creation failed. Try a different email." : "Sign in failed. Check your email and password.");
       setIsLoading(false);
       return;
+    }
+
+    if (!isSignup) {
+      try {
+        const adminProbe = await fetch("/api/v1/admin/overview", { method: "GET" });
+        if (adminProbe.ok) {
+          window.location.href = "/admin";
+          return;
+        }
+      } catch {
+        // Ignore and fall through to default dashboard.
+      }
     }
 
     window.location.href = response.url ?? callbackUrl;
