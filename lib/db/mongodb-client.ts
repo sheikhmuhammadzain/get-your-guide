@@ -2,14 +2,15 @@ import { MongoClient } from "mongodb";
 import { getServerEnv } from "@/lib/env/server";
 
 declare global {
-  var mongoClientPromise: Promise<MongoClient> | undefined;
+  var mongoClientCache:
+    | {
+        uri: string;
+        promise: Promise<MongoClient>;
+      }
+    | undefined;
 }
 
 export function getMongoClientPromise() {
-  if (globalThis.mongoClientPromise) {
-    return globalThis.mongoClientPromise;
-  }
-
   const { MONGODB_URI } = getServerEnv();
   if (!MONGODB_URI) {
     throw new Error("MONGODB_URI is required for auth adapter");
@@ -20,8 +21,17 @@ export function getMongoClientPromise() {
   if (!hasDbName) {
     parsed.pathname = "/travel_planner";
   }
+  const normalizedUri = parsed.toString();
 
-  const client = new MongoClient(parsed.toString());
-  globalThis.mongoClientPromise = client.connect();
-  return globalThis.mongoClientPromise;
+  if (globalThis.mongoClientCache?.uri === normalizedUri) {
+    return globalThis.mongoClientCache.promise;
+  }
+
+  const client = new MongoClient(normalizedUri);
+  const promise = client.connect();
+  globalThis.mongoClientCache = {
+    uri: normalizedUri,
+    promise,
+  };
+  return promise;
 }
