@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import {
@@ -16,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
+import { GETYOURGUIDE_LOGO_DATA_URI } from "@/components/branding/logo";
 
 type AdminTab = "users" | "orders" | "itineraries" | "feedback";
 type AdminNav = "overview" | AdminTab;
@@ -283,10 +285,16 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
     <div className="flex min-h-screen">
       <aside className="hidden w-[260px] border-r border-[#e4e7ec] bg-[#f8f9fb] p-4 lg:flex lg:flex-col">
         <div className="mb-4 flex items-center gap-2 rounded-xl px-2 py-1">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
-            <Sparkles className="h-4 w-4" />
+          <div className="overflow-hidden rounded-lg">
+            <Image
+              src={GETYOURGUIDE_LOGO_DATA_URI}
+              alt="GetYourGuide"
+              width={36}
+              height={40}
+              className="h-8 w-8 object-cover object-left"
+              unoptimized
+            />
           </div>
-          <p className="text-lg font-semibold tracking-tight text-[#1f2733]">Adminy</p>
         </div>
 
         <div className="mb-4 rounded-xl border border-[#e4e7ec] bg-white px-3 py-2">
@@ -791,5 +799,7 @@ function DangerButton({ label, disabled, onClick }: { label: string; disabled?: 
     </button>
   );
 }
+
+
 
 
