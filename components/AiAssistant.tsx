@@ -128,16 +128,28 @@ export default function AiAssistant() {
     const dataLines: string[] = [];
 
     for (const line of chunk.split("\n")) {
-      if (line.startsWith("event:")) {
-        event = line.slice(6).trim();
+      const normalizedLine = line.replace(/\r$/, "");
+      if (normalizedLine.startsWith(":")) {
         continue;
       }
-      if (line.startsWith("data:")) {
-        dataLines.push(line.slice(5).trimStart());
+      if (normalizedLine.startsWith("event:")) {
+        event = normalizedLine.slice(6).trim();
+        continue;
+      }
+      if (normalizedLine.startsWith("data:")) {
+        dataLines.push(normalizedLine.slice(5).trimStart());
       }
     }
 
     return { event, data: dataLines.join("\n") };
+  }
+
+  function findSseDelimiterIndex(buffer: string) {
+    const lf = buffer.indexOf("\n\n");
+    const crlf = buffer.indexOf("\r\n\r\n");
+    if (lf === -1) return crlf;
+    if (crlf === -1) return lf;
+    return Math.min(lf, crlf);
   }
 
   async function sendMessage() {
@@ -189,11 +201,12 @@ export default function AiAssistant() {
         buffer += decoder.decode(value, { stream: true });
 
         while (true) {
-          const delimiterIndex = buffer.indexOf("\n\n");
+          const delimiterIndex = findSseDelimiterIndex(buffer);
           if (delimiterIndex === -1) break;
 
           const rawChunk = buffer.slice(0, delimiterIndex);
-          buffer = buffer.slice(delimiterIndex + 2);
+          const separatorLength = buffer.startsWith("\r\n\r\n", delimiterIndex) ? 4 : 2;
+          buffer = buffer.slice(delimiterIndex + separatorLength);
           const parsed = parseSseChunk(rawChunk);
 
           if (parsed.event === "token") {
@@ -235,6 +248,28 @@ export default function AiAssistant() {
             } catch {
               replaceMessage(assistantMessageId, "Assistant stream failed");
             }
+          }
+        }
+      }
+
+      // Process any trailing event chunk not terminated by double newline.
+      if (buffer.trim()) {
+        const parsed = parseSseChunk(buffer);
+        if (parsed.event === "done") {
+          try {
+            const payload = JSON.parse(parsed.data) as {
+              reply?: string;
+              agent?: ChatMessage["agent"];
+            };
+            if (payload.reply) {
+              completedReply = payload.reply;
+              replaceMessage(assistantMessageId, payload.reply);
+            }
+            if (payload.agent) {
+              patchMessageAgent(assistantMessageId, payload.agent);
+            }
+          } catch {
+            // ignore malformed trailing done payload
           }
         }
       }
