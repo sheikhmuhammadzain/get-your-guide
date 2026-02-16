@@ -147,6 +147,7 @@ export async function chatWithAssistant(input: ChatInput) {
 export async function chatWithAssistantStream(
   input: ChatInput,
   onDelta: (delta: string) => void | Promise<void>,
+  options?: { signal?: AbortSignal },
 ) {
   const { userObjectId, messages } = await loadConversation(input);
   let agent: ChatAgentResult | null = null;
@@ -164,22 +165,47 @@ export async function chatWithAssistantStream(
   if (agent?.assistantMessage) {
     const chunks = agent.assistantMessage.match(/.{1,20}(\s|$)/g) ?? [agent.assistantMessage];
     for (const chunk of chunks) {
+      if (options?.signal?.aborted) {
+        break;
+      }
       assistantReply += chunk;
       await onDelta(chunk);
+      await new Promise((resolve) => setTimeout(resolve, 18));
     }
   } else if (client && model) {
     try {
-      const result = client.callModel({
-        model,
-        temperature: 0.3,
-        maxOutputTokens: 500,
-        instructions:
-          "You are a concise Turkey travel assistant. Provide practical recommendations and ask one follow-up question.",
-        input: mapToModelMessages(messages),
+      const stream = await client.chat.send({
+        chatGenerationParams: {
+          model,
+          stream: true,
+          temperature: 0.3,
+          maxTokens: 500,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a concise Turkey travel assistant. Provide practical recommendations and ask one follow-up question.",
+            },
+            ...mapToModelMessages(messages),
+          ],
+        },
+      }, {
+        signal: options?.signal,
       });
 
-      for await (const delta of result.getTextStream()) {
-        if (!delta) continue;
+      for await (const chunk of stream) {
+        if (options?.signal?.aborted) {
+          break;
+        }
+
+        if ("error" in chunk && chunk.error) {
+          throw new Error(chunk.error.message ?? "OpenRouter streaming error");
+        }
+
+        const delta = chunk.choices?.[0]?.delta?.content;
+        if (!delta) {
+          continue;
+        }
         assistantReply += delta;
         await onDelta(delta);
       }

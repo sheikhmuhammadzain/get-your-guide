@@ -35,6 +35,10 @@ export async function POST(request: Request) {
 
     const body = chatRequestSchema.parse(await request.json());
     const encoder = new TextEncoder();
+    const abortController = new AbortController();
+    request.signal.addEventListener("abort", () => {
+      abortController.abort();
+    });
 
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
@@ -56,6 +60,7 @@ export async function POST(request: Request) {
               async (delta) => {
                 send("token", { delta });
               },
+              { signal: abortController.signal },
             );
 
             send("done", result);
@@ -75,6 +80,7 @@ export async function POST(request: Request) {
         "content-type": "text/event-stream; charset=utf-8",
         "cache-control": "no-cache, no-transform",
         connection: "keep-alive",
+        "x-accel-buffering": "no",
       },
     });
   } catch (error) {
