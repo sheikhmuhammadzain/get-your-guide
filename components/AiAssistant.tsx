@@ -7,6 +7,27 @@ interface ChatMessage {
   id: string;
   role: "assistant" | "user";
   content: string;
+  agent?: {
+    intent: "recommendation" | "booking" | "general";
+    recommendations: Array<{
+      productId: string;
+      title: string;
+      location: string;
+      price: number;
+      currency: string;
+      rating: number;
+      reason: string;
+      url: string;
+    }>;
+    booking: {
+      productId: string;
+      title: string;
+      quantity: number;
+      estimatedTotal: number;
+      currency: string;
+      checkoutUrl: string;
+    } | null;
+  };
 }
 
 export default function AiAssistant() {
@@ -38,6 +59,10 @@ export default function AiAssistant() {
 
   function replaceMessage(messageId: string, content: string) {
     setMessages((prev) => prev.map((item) => (item.id === messageId ? { ...item, content } : item)));
+  }
+
+  function patchMessageAgent(messageId: string, agent: ChatMessage["agent"]) {
+    setMessages((prev) => prev.map((item) => (item.id === messageId ? { ...item, agent } : item)));
   }
 
   function parseSseChunk(chunk: string) {
@@ -128,10 +153,16 @@ export default function AiAssistant() {
 
           if (parsed.event === "done") {
             try {
-              const payload = JSON.parse(parsed.data) as { reply?: string };
+              const payload = JSON.parse(parsed.data) as {
+                reply?: string;
+                agent?: ChatMessage["agent"];
+              };
               if (payload.reply) {
                 completedReply = payload.reply;
                 replaceMessage(assistantMessageId, payload.reply);
+              }
+              if (payload.agent) {
+                patchMessageAgent(assistantMessageId, payload.agent);
               }
             } catch {
               // ignore malformed done payload
@@ -184,28 +215,58 @@ export default function AiAssistant() {
 
           <div ref={scrollRef} className="flex-1 bg-gradient-to-b from-slate-50 to-slate-100/60 px-3 py-4 sm:px-4 overflow-y-auto flex flex-col gap-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={
-                  message.role === "assistant"
-                    ? "flex gap-2 max-w-[88%]"
-                    : "flex gap-2 max-w-[88%] self-end flex-row-reverse"
-                }
-              >
-                {message.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200 shadow-sm">
-                    <Sparkles className="w-4 h-4 text-brand" />
-                  </div>
-                )}
+              <div key={message.id} className={message.role === "assistant" ? "max-w-[88%]" : "max-w-[88%] self-end"}>
                 <div
                   className={
                     message.role === "assistant"
-                      ? "bg-white px-3.5 py-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm text-[15px] leading-7 text-gray-700"
-                      : "bg-brand text-white px-3.5 py-3 rounded-2xl rounded-tr-none shadow-md text-[15px] leading-7"
+                      ? "flex gap-2"
+                      : "flex gap-2 self-end flex-row-reverse"
                   }
                 >
-                  {message.content || (message.role === "assistant" && isSending ? "..." : "")}
+                  {message.role === "assistant" && (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200 shadow-sm">
+                      <Sparkles className="w-4 h-4 text-brand" />
+                    </div>
+                  )}
+                  <div
+                    className={
+                      message.role === "assistant"
+                        ? "bg-white px-3.5 py-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm text-[15px] leading-7 text-gray-700"
+                        : "bg-brand text-white px-3.5 py-3 rounded-2xl rounded-tr-none shadow-md text-[15px] leading-7"
+                    }
+                  >
+                    {message.content || (message.role === "assistant" && isSending ? "..." : "")}
+                  </div>
                 </div>
+
+                {message.role === "assistant" && message.agent ? (
+                  <div className="ml-10 mt-2 space-y-2">
+                    {message.agent.recommendations.length > 0 ? (
+                      <div className="grid gap-2">
+                        {message.agent.recommendations.slice(0, 3).map((item) => (
+                          <a
+                            key={`${message.id}-${item.productId}`}
+                            href={item.url}
+                            className="block rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs shadow-sm hover:border-blue-300"
+                          >
+                            <p className="font-semibold text-text-primary">{item.title}</p>
+                            <p className="mt-0.5 text-text-muted">{item.location} • {item.rating.toFixed(1)}★</p>
+                            <p className="mt-1 font-semibold text-brand">From {item.price} {item.currency}</p>
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {message.agent.booking ? (
+                      <a
+                        href={message.agent.booking.checkoutUrl}
+                        className="inline-flex items-center rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover"
+                      >
+                        Book {message.agent.booking.title} ({message.agent.booking.estimatedTotal} {message.agent.booking.currency})
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

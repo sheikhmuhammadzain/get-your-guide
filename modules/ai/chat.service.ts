@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { logger } from "@/lib/observability/logger";
+import { runChatAgent, type ChatAgentResult } from "@/modules/ai/chat-agent.service";
 import { ChatSessionModel } from "@/modules/ai/chat-session.model";
 import { getOpenRouterClient, getOpenRouterModel } from "@/modules/ai/openrouter-client";
 
@@ -69,12 +70,20 @@ function mapToModelMessages(messages: Array<{ role: "user" | "assistant"; conten
 
 export async function chatWithAssistant(input: ChatInput) {
   const { userObjectId, messages } = await loadConversation(input);
+  let agent: ChatAgentResult | null = null;
 
   const client = getOpenRouterClient();
   const model = getOpenRouterModel();
   let assistantReply = fallbackAssistantReply(input.message);
 
-  if (client && model) {
+  try {
+    agent = await runChatAgent(input.message);
+    assistantReply = agent.assistantMessage || assistantReply;
+  } catch {
+    // Keep default/fallback behavior.
+  }
+
+  if ((!agent || !assistantReply.trim()) && client && model) {
     try {
       const result = client.callModel({
         model,
@@ -103,6 +112,7 @@ export async function chatWithAssistant(input: ChatInput) {
     sessionId: persisted.sessionId,
     reply: assistantReply,
     suggestions: persisted.suggestions,
+    agent,
   };
 }
 
@@ -111,12 +121,25 @@ export async function chatWithAssistantStream(
   onDelta: (delta: string) => void | Promise<void>,
 ) {
   const { userObjectId, messages } = await loadConversation(input);
+  let agent: ChatAgentResult | null = null;
 
   const client = getOpenRouterClient();
   const model = getOpenRouterModel();
   let assistantReply = "";
 
-  if (client && model) {
+  try {
+    agent = await runChatAgent(input.message);
+  } catch {
+    // Ignore agent failure and fallback to model streaming.
+  }
+
+  if (agent?.assistantMessage) {
+    const chunks = agent.assistantMessage.match(/.{1,20}(\s|$)/g) ?? [agent.assistantMessage];
+    for (const chunk of chunks) {
+      assistantReply += chunk;
+      await onDelta(chunk);
+    }
+  } else if (client && model) {
     try {
       const result = client.callModel({
         model,
@@ -151,5 +174,6 @@ export async function chatWithAssistantStream(
     sessionId: persisted.sessionId,
     reply: assistantReply,
     suggestions: persisted.suggestions,
+    agent,
   };
 }
