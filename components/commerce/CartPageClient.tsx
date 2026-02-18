@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -109,7 +109,7 @@ export default function CartPageClient() {
             <article key={item.productId} className="rounded-xl border border-gray-200 bg-white p-5">
               <h2 className="font-semibold">{product.title}</h2>
               <p className="mt-1 text-sm text-gray-600">
-                {product.location} • {product.duration}
+                {product.location} | {product.duration}
               </p>
               <p className="mt-2 text-sm text-gray-700">{formattedUnitPrice} per traveler</p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -127,7 +127,10 @@ export default function CartPageClient() {
                 >
                   Remove
                 </button>
-                <Link href={`/products/${product.id}`} className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">
+                <Link
+                  href={`/products/${product.id}`}
+                  className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
+                >
                   View detail
                 </Link>
               </div>
