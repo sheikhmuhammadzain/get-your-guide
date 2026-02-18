@@ -1,5 +1,6 @@
 ﻿import { Star } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function HeroSection() {
   return (
@@ -48,7 +49,7 @@ export default function HeroSection() {
               <div className="mb-3">
                 <h3 className="text-text-heading font-bold text-xl sm:text-2xl mb-2">Continue planning your trip</h3>
               </div>
-              <div className="flex gap-3 md:gap-4 bg-white rounded-lg p-3 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow">
+              <Link href="/products/2" className="flex gap-3 md:gap-4 bg-white rounded-lg p-3 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
                   <Image
                     src="https://picsum.photos/seed/istanbul-planning/200/200"
@@ -62,7 +63,7 @@ export default function HeroSection() {
                     <h4 className="font-bold text-sm leading-tight text-gray-900 mb-1 line-clamp-2">
                       Istanbul: Skip-the-line Hagia Sophia and Basilica Cistern Tour
                     </h4>
-                    <p className="text-xs text-gray-600 mb-1">2 hours • Skip the line</p>
+                    <p className="text-xs text-gray-600 mb-1">2 hours | Skip the line</p>
                     <div className="flex items-center gap-1">
                       <div className="flex text-yellow-400">
                         <Star className="w-3 h-3 fill-current" />
@@ -78,7 +79,7 @@ export default function HeroSection() {
                     From <span className="font-bold text-lg text-text-heading">$42</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
