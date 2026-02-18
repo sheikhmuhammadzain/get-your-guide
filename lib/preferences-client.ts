@@ -70,11 +70,11 @@ export function writeAppPreferences(next: AppPreferences) {
 }
 
 export function useAppPreferences() {
-  const [preferences, setPreferences] = useState<AppPreferences>(DEFAULT_APP_PREFERENCES);
+  const [preferences, setPreferences] = useState<AppPreferences>(() =>
+    typeof window === "undefined" ? DEFAULT_APP_PREFERENCES : readAppPreferences(),
+  );
 
   useEffect(() => {
-    setPreferences(readAppPreferences());
-
     function onPreferencesChanged(event: Event) {
       const custom = event as CustomEvent<AppPreferences>;
       if (custom.detail) {
