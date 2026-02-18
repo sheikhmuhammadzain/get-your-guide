@@ -21,7 +21,7 @@ export function getOpenRouterClient() {
     ...(env.OPENROUTER_SITE_URL ? { httpReferer: env.OPENROUTER_SITE_URL } : {}),
     ...(env.OPENROUTER_APP_NAME ? { xTitle: env.OPENROUTER_APP_NAME } : {}),
   });
-  cachedModel = env.OPENROUTER_MODEL ?? "meta-llama/llama-3.1-8b-instruct:free";
+  cachedModel = env.OPENROUTER_MODEL ?? null;
   return cachedClient;
 }
 

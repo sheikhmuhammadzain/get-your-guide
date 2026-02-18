@@ -28,7 +28,7 @@ export function getOpenAIClient() {
         ...(env.OPENROUTER_APP_NAME ? { "X-Title": env.OPENROUTER_APP_NAME } : {}),
       },
     });
-    cachedModel = env.OPENROUTER_MODEL ?? "meta-llama/llama-3.1-8b-instruct:free";
+    cachedModel = env.OPENROUTER_MODEL ?? null;
     return cachedClient;
   }
 

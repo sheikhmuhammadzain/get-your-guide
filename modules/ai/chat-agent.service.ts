@@ -224,6 +224,10 @@ export async function runChatAgent(message: string): Promise<ChatAgentResult> {
   if (!env.OPENROUTER_API_KEY) {
     return fallbackAgentResponse(message);
   }
+  if (!env.OPENROUTER_MODEL) {
+    logger.warn("OPENROUTER_MODEL is not set; using local chat-agent fallback");
+    return fallbackAgentResponse(message);
+  }
 
   try {
     const catalog = products.map((product) => ({
@@ -237,7 +241,7 @@ export async function runChatAgent(message: string): Promise<ChatAgentResult> {
     }));
 
     const requestBody = {
-      model: env.OPENROUTER_MODEL ?? "meta-llama/llama-3.1-8b-instruct:free",
+      model: env.OPENROUTER_MODEL,
       temperature: 0.2,
       messages: [
         {
@@ -325,7 +329,7 @@ export async function runChatAgent(message: string): Promise<ChatAgentResult> {
 
     if (!response.ok && response.status === 400) {
       const fallbackBody = {
-        model: env.OPENROUTER_MODEL ?? "meta-llama/llama-3.1-8b-instruct:free",
+        model: env.OPENROUTER_MODEL,
         temperature: 0.2,
         messages: [
           {
