@@ -24,12 +24,12 @@ export default function HeroSection() {
 
           <div className="max-w-[640px] w-full mb-6 md:mb-12">
             <form
-              action="/planner"
+              action="/"
               className="relative flex items-center w-full h-14 md:h-16 rounded-full bg-white shadow-lg overflow-hidden pl-4 md:pl-6 pr-2"
             >
               <div className="flex-1 flex items-center h-full">
                 <input
-                  name="destination"
+                  name="q"
                   type="text"
                   placeholder="Find places and things to do in Turkey"
                   className="w-full h-full outline-none text-gray-700 placeholder-gray-500 font-medium text-base md:text-lg bg-transparent"

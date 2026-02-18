@@ -24,8 +24,10 @@ const TurkeyMap = dynamic(() => import('@/components/TurkeyMap'), {
   ),
 });
 
-export default function LandingInteractiveSection() {
+export default function LandingInteractiveSection({ searchQuery }: { searchQuery?: string }) {
   const [showMap, setShowMap] = useState(false);
+  const [resultCount, setResultCount] = useState(0);
+  const normalizedQuery = (searchQuery ?? '').trim();
 
   return (
     <>
@@ -33,8 +35,17 @@ export default function LandingInteractiveSection() {
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <h1 className="text-text-heading font-bold text-xl md:text-2xl flex items-baseline gap-2">
-          <span className="text-gray-500 font-normal">Showing results for:</span>
-          <span>Turkey AI Itinerary</span>
+          {normalizedQuery ? (
+            <>
+              <span className="text-gray-500 font-normal">{resultCount} results for:</span>
+              <span>{normalizedQuery}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-500 font-normal">Showing results for:</span>
+              <span>Turkey AI Itinerary</span>
+            </>
+          )}
         </h1>
 
         <div className="flex items-center gap-4 md:gap-6">
@@ -60,7 +71,7 @@ export default function LandingInteractiveSection() {
 
       <div className="flex gap-6 relative">
         <div className={`flex-1 transition-all duration-300 ${showMap ? 'w-full md:w-1/2 lg:w-3/5' : 'w-full'}`}>
-          <ProductList />
+          <ProductList searchQuery={normalizedQuery} onCountChange={setResultCount} />
         </div>
 
         {showMap && (

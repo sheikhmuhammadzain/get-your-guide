@@ -9,7 +9,13 @@ interface WishlistResponse {
   count: number;
 }
 
-export default function ProductList() {
+export default function ProductList({
+  searchQuery = "",
+  onCountChange,
+}: {
+  searchQuery?: string;
+  onCountChange?: (count: number) => void;
+}) {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -40,6 +46,21 @@ export default function ProductList() {
   }, []);
 
   const wishlistSet = useMemo(() => new Set(wishlistIds), [wishlistIds]);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredProducts = useMemo(() => {
+    if (!normalizedQuery) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const haystack = `${product.title} ${product.location} ${product.category} ${product.summary}`.toLowerCase();
+      return haystack.includes(normalizedQuery);
+    });
+  }, [normalizedQuery]);
+
+  useEffect(() => {
+    onCountChange?.(filteredProducts.length);
+  }, [filteredProducts.length, onCountChange]);
 
   async function toggleWishlist(productId: string) {
     try {
@@ -66,9 +87,18 @@ export default function ProductList() {
     }
   }
 
+  if (filteredProducts.length === 0) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+        <p className="text-lg font-semibold text-text-heading">No matching experiences found</p>
+        <p className="mt-2 text-sm text-gray-600">Try another destination keyword like Istanbul, Cappadocia, or Ephesus.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {products.map((product) => (
+      {filteredProducts.map((product) => (
         <ProductCard
           key={product.id}
           product={product}

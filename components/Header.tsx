@@ -20,8 +20,20 @@ export default function Header() {
   const [userName, setUserName] = useState<string | null>(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
+  const [activeQuery, setActiveQuery] = useState('');
   const accountRef = useRef<HTMLDivElement | null>(null);
   const { preferences, setPreferences } = useAppPreferences();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const url = new URL(window.location.href);
+      setActiveQuery(url.searchParams.get('q') ?? url.searchParams.get('destination') ?? '');
+    } catch {
+      setActiveQuery('');
+    }
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -174,13 +186,14 @@ export default function Header() {
 
         {/* Search Bar - conditionally visible */}
         <div className={`hidden md:block flex-1 max-w-[640px] transition-opacity duration-300 ${showSearch ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-          <form action="/planner" role="search" className="relative flex items-center w-full h-11 rounded-full border border-gray-300 shadow-sm hover:shadow-md transition-shadow bg-white overflow-hidden pl-5 pr-1 py-1 group focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
+          <form action="/" role="search" className="relative flex items-center w-full h-11 rounded-full border border-gray-300 shadow-sm hover:shadow-md transition-shadow bg-white overflow-hidden pl-5 pr-1 py-1 group focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
             {/* Find places text usually goes here but screenshot shows just placeholder */}
             <input
               type="search"
-              name="destination"
+              name="q"
               id="header-search-destination"
               placeholder="Find places and things to do"
+              defaultValue={activeQuery}
               aria-label="Search destination"
               className="flex-1 h-full outline-none text-gray-700 placeholder-gray-500 font-medium text-[15px]"
             />
@@ -346,4 +359,3 @@ export default function Header() {
     </header>
   );
 }
-
