@@ -50,30 +50,81 @@ interface TransportData {
   source?: 'google-distance-matrix' | 'heuristic';
 }
 
+const PLANNER_STORAGE_KEY = 'itinerary-planner-state';
+
+interface PlannerPersistedState {
+  destinations: string[];
+  duration: string;
+  interest: InterestTag;
+  budget: BudgetLevel;
+  transportFrom: string;
+  transportMode: 'car' | 'bus' | 'flight';
+  transportDepartureDate: string;
+  result: GeneratedItinerary | null;
+  requestSnapshot: ItineraryRequest | null;
+  savedItineraryId: string | null;
+}
+
+function readPersistedState(): Partial<PlannerPersistedState> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(PLANNER_STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Partial<PlannerPersistedState>;
+  } catch {
+    return {};
+  }
+}
+
 export default function ItineraryGenerator() {
-  const [destinations, setDestinations] = useState<string[]>(['istanbul']);
-  const [duration, setDuration] = useState<string>('4-7');
-  const [interest, setInterest] = useState<InterestTag>('culture');
-  const [budget, setBudget] = useState<BudgetLevel>('standard');
-  const [transportFrom, setTransportFrom] = useState<string>('istanbul');
-  const [transportMode, setTransportMode] = useState<'car' | 'bus' | 'flight'>('bus');
-  const [transportDepartureDate, setTransportDepartureDate] = useState<string>(() =>
-    new Date().toISOString().slice(0, 10),
+  const saved = useMemo(() => readPersistedState(), []);
+
+  const [destinations, setDestinations] = useState<string[]>(
+    () => saved.destinations?.length ? saved.destinations : ['istanbul'],
+  );
+  const [duration, setDuration] = useState<string>(saved.duration ?? '4-7');
+  const [interest, setInterest] = useState<InterestTag>(saved.interest ?? 'culture');
+  const [budget, setBudget] = useState<BudgetLevel>(saved.budget ?? 'standard');
+  const [transportFrom, setTransportFrom] = useState<string>(saved.transportFrom ?? 'istanbul');
+  const [transportMode, setTransportMode] = useState<'car' | 'bus' | 'flight'>(saved.transportMode ?? 'bus');
+  const [transportDepartureDate, setTransportDepartureDate] = useState<string>(
+    () => saved.transportDepartureDate ?? new Date().toISOString().slice(0, 10),
   );
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [realtimeLoading, setRealtimeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveResult, setSaveResult] = useState<string | null>(null);
-  const [savedItineraryId, setSavedItineraryId] = useState<string | null>(null);
-  const [result, setResult] = useState<GeneratedItinerary | null>(null);
-  const [requestSnapshot, setRequestSnapshot] = useState<ItineraryRequest | null>(null);
+  const [savedItineraryId, setSavedItineraryId] = useState<string | null>(saved.savedItineraryId ?? null);
+  const [result, setResult] = useState<GeneratedItinerary | null>(saved.result ?? null);
+  const [requestSnapshot, setRequestSnapshot] = useState<ItineraryRequest | null>(saved.requestSnapshot ?? null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [currency, setCurrency] = useState<CurrencyData | null>(null);
   const [transport, setTransport] = useState<TransportData | null>(null);
 
   const daysSelected = useMemo(() => DURATION_DAYS[duration] ?? 5, [duration]);
   const primaryDestination = destinations[0] ?? 'istanbul';
+
+  /* ── Persist form state to localStorage ── */
+  useEffect(() => {
+    const state: PlannerPersistedState = {
+      destinations,
+      duration,
+      interest,
+      budget,
+      transportFrom,
+      transportMode,
+      transportDepartureDate,
+      result,
+      requestSnapshot,
+      savedItineraryId,
+    };
+    try {
+      window.localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Storage full or unavailable — silently ignore.
+    }
+  }, [destinations, duration, interest, budget, transportFrom, transportMode, transportDepartureDate, result, requestSnapshot, savedItineraryId]);
 
   function toggleDestination(city: string) {
     setDestinations((prev) => {
@@ -298,8 +349,8 @@ export default function ItineraryGenerator() {
                   type="button"
                   onClick={() => toggleDestination(item)}
                   className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${active
-                      ? 'border-brand bg-brand text-white'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'border-brand bg-brand text-white'
+                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                     }`}
                 >
                   {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -486,8 +537,8 @@ export default function ItineraryGenerator() {
                 </p>
                 {!realtimeLoading && transport?.source && (
                   <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${transport.source === 'google-distance-matrix'
-                      ? 'bg-emerald-50 text-emerald-600'
-                      : 'bg-amber-50 text-amber-600'
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : 'bg-amber-50 text-amber-600'
                     }`}>
                     {transport.source === 'google-distance-matrix' ? 'Google Maps' : 'Estimate'}
                   </span>
