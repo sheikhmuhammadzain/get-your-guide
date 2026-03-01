@@ -63,48 +63,48 @@ export default function AuthCard({ mode }: AuthCardProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-xl md:rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-md md:shadow-lg">
+    <div className="mx-auto w-full max-w-md rounded-xl md:rounded-2xl border border-border-default bg-surface-base p-5 md:p-6 shadow-md md:shadow-lg">
       <h1 className="text-2xl font-bold text-text-heading">{title}</h1>
-      <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
+      <p className="mt-1 text-sm text-text-body">{subtitle}</p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <label className="block">
-          <span className="mb-1 block text-sm font-semibold text-gray-700">Email</span>
+          <span className="mb-1 block text-sm font-semibold text-text-body">Email</span>
           <input
             required
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
+            className="h-11 w-full rounded-lg border border-border-strong bg-surface-base px-3 text-text-primary outline-none focus:border-brand"
             placeholder="you@example.com"
           />
         </label>
 
         {isSignup ? (
           <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-gray-700">Name</span>
+            <span className="mb-1 block text-sm font-semibold text-text-body">Name</span>
             <input
               required
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
+              className="h-11 w-full rounded-lg border border-border-strong bg-surface-base px-3 text-text-primary outline-none focus:border-brand"
               placeholder="Your name"
             />
           </label>
         ) : null}
 
         <label className="block">
-          <span className="mb-1 block text-sm font-semibold text-gray-700">Password</span>
+          <span className="mb-1 block text-sm font-semibold text-text-body">Password</span>
           <input
             required
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
+            className="h-11 w-full rounded-lg border border-border-strong bg-surface-base px-3 text-text-primary outline-none focus:border-brand"
             placeholder="Enter password"
           />
           {isSignup ? (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-text-muted">
               Use at least 8 characters with uppercase, lowercase, number, and symbol.
             </p>
           ) : null}
@@ -121,7 +121,7 @@ export default function AuthCard({ mode }: AuthCardProps) {
 
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
 
-      <div className="mt-5 text-sm text-gray-600">
+      <div className="mt-5 text-sm text-text-body">
         {isSignup ? "Already have an account?" : "New here?"}{" "}
         <Link href={isSignup ? "/auth/signin" : "/auth/signup"} className="font-semibold text-brand">
           {isSignup ? "Sign in" : "Create account"}

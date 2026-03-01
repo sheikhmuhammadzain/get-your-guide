@@ -5,7 +5,7 @@ export default function PressPage() {
     <StaticContentPage
       title="Press"
       description="Press and media information."
-      body="For media requests, partnership announcements, or product briefings, contact press@getyourguide.local with your publication and deadline."
+      body="For media requests, partnership announcements, or product briefings, contact press@smarttripai.com with your publication and deadline."
     />
   );
 }

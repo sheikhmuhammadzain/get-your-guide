@@ -62,9 +62,17 @@ export default function TurkeyMap() {
   const [routeCities, setRouteCities] = useState<string[]>(['Istanbul', 'Cappadocia', 'Ephesus']);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lon: number;
+    city?: string;
+    country?: string;
+  } | null>(null);
+  const [locating, setLocating] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const routeLineRef = useRef<google.maps.Polyline | null>(null);
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const hasInitializedRef = useRef(false);
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -93,8 +101,110 @@ export default function TurkeyMap() {
     return sum;
   }, [routeCities]);
 
+  const nearestCity = useMemo(() => {
+    if (!userLocation) return null;
+    let closest: (typeof MARKERS)[number] = MARKERS[0];
+    let minDist = Infinity;
+    for (const marker of MARKERS) {
+      const dist = getDistanceKm(userLocation, marker);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = marker;
+      }
+    }
+    return { marker: closest, distanceKm: minDist };
+  }, [userLocation]);
+
   function toggleRouteCity(city: string) {
     setRouteCities((prev) => (prev.includes(city) ? prev.filter((item) => item !== city) : [...prev, city]));
+  }
+
+  async function locateUser() {
+    if (!navigator.geolocation) {
+      setMapError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setLocating(true);
+    setMapError(null);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 300000,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      const loc: typeof userLocation = { lat: latitude, lon: longitude };
+
+      // Reverse geocode with Google to get city/country
+      if (googleMapsKey) {
+        try {
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleMapsKey}&result_type=locality|country`,
+          );
+          if (response.ok) {
+            const data = (await response.json()) as {
+              results?: Array<{
+                address_components?: Array<{
+                  long_name: string;
+                  types: string[];
+                }>;
+              }>;
+            };
+            const components = data.results?.[0]?.address_components ?? [];
+            const city = components.find((c) => c.types.includes('locality'))?.long_name;
+            const country = components.find((c) => c.types.includes('country'))?.long_name;
+            loc.city = city;
+            loc.country = country;
+          }
+        } catch {
+          // Reverse geocoding failed — location still works without city name.
+        }
+      }
+
+      setUserLocation(loc);
+
+      // Add/move user marker on the map
+      if (mapRef.current) {
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setPosition({ lat: latitude, lng: longitude });
+        } else {
+          userMarkerRef.current = new google.maps.Marker({
+            position: { lat: latitude, lng: longitude },
+            map: mapRef.current,
+            title: 'Your Location',
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: '#3b82f6',
+              fillOpacity: 1,
+              strokeColor: '#ffffff',
+              strokeWeight: 3,
+            },
+          });
+        }
+
+        // Pan to show both user and Turkey
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend({ lat: latitude, lng: longitude });
+        MARKERS.forEach((m) => bounds.extend({ lat: m.lat, lng: m.lon }));
+        mapRef.current.fitBounds(bounds, 40);
+      }
+    } catch (err) {
+      const geoError = err as GeolocationPositionError;
+      const messages: Record<number, string> = {
+        1: 'Location access denied. Please allow location in your browser settings.',
+        2: 'Location unavailable. Please try again.',
+        3: 'Location request timed out. Please try again.',
+      };
+      setMapError(messages[geoError.code] ?? 'Could not get your location.');
+    } finally {
+      setLocating(false);
+    }
   }
 
   useEffect(() => {
@@ -204,9 +314,8 @@ export default function TurkeyMap() {
               <button
                 key={marker.city}
                 onClick={() => setSelectedCity(marker)}
-                className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                  active ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-blue-50'
-                }`}
+                className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${active ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-blue-50'
+                  }`}
                 aria-label={`Show ${marker.city} on map`}
               >
                 {marker.city}
@@ -223,9 +332,8 @@ export default function TurkeyMap() {
               <button
                 key={`route-${marker.city}`}
                 onClick={() => toggleRouteCity(marker.city)}
-                className={`rounded-full border px-2 py-1 text-[11px] ${
-                  active ? 'border-green-600 bg-green-600 text-white' : 'border-gray-300 bg-white text-gray-700'
-                }`}
+                className={`rounded-full border px-2 py-1 text-[11px] ${active ? 'border-green-600 bg-green-600 text-white' : 'border-gray-300 bg-white text-gray-700'
+                  }`}
               >
                 {active ? 'In route' : 'Add'} {marker.city}
               </button>
@@ -237,12 +345,41 @@ export default function TurkeyMap() {
         <p className="text-xs text-gray-600">Approx route distance: {estimatedRouteDistance} km</p>
         <p className="mt-1 text-xs text-gray-600">Focus: {selectedCity.label}</p>
 
-        <button
-          onClick={() => void saveMapPreferences()}
-          className="mt-2 rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-        >
-          Save map preferences
-        </button>
+        {/* User Location Info */}
+        {userLocation && nearestCity && (
+          <div className="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2">
+            <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-blue-500" />
+            <div className="text-[11px] leading-relaxed text-blue-800">
+              <p className="font-semibold">
+                {userLocation.city
+                  ? `You are in ${userLocation.city}${userLocation.country ? `, ${userLocation.country}` : ''}`
+                  : 'Your location detected'}
+              </p>
+              <p>
+                {nearestCity.distanceKm.toLocaleString()} km from {nearestCity.marker.city} (nearest)
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            onClick={() => void locateUser()}
+            disabled={locating}
+            className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:opacity-50"
+          >
+            <span className={`inline-block h-2 w-2 rounded-full ${locating ? 'animate-pulse bg-blue-400' : 'bg-blue-500'}`} />
+            {locating ? 'Locating…' : userLocation ? 'Update Location' : '📍 My Location'}
+          </button>
+
+          <button
+            onClick={() => void saveMapPreferences()}
+            className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+          >
+            Save map preferences
+          </button>
+        </div>
+
         {mapError ? <p className="mt-1 text-xs text-red-700">{mapError}</p> : null}
         {saveMessage ? <p className="mt-1 text-xs text-gray-700">{saveMessage}</p> : null}
       </div>

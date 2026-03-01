@@ -25,7 +25,7 @@ export async function listAttractions(filters: AttractionListFilters): Promise<C
   const query: Record<string, unknown> = {};
 
   if (filters.city) {
-    query.city = filters.city;
+    query.city = { $regex: new RegExp(`^${filters.city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
   }
 
   if (filters.tags && filters.tags.length > 0) {
@@ -74,4 +74,23 @@ export async function getAttractionsForPlanning(cities: string[], interests: Int
   }
 
   return byCity;
+}
+
+/** Look up attractions by their _id values and return a Map<string, doc> */
+export async function getAttractionsByIds(ids: string[]) {
+  await connectToDatabase();
+
+  const objectIds = ids
+    .filter((id) => Types.ObjectId.isValid(id))
+    .map((id) => new Types.ObjectId(id));
+
+  if (objectIds.length === 0) return new Map<string, AttractionDocument & { _id: Types.ObjectId }>();
+
+  const docs = await AttractionModel.find({ _id: { $in: objectIds } }).lean();
+
+  const map = new Map<string, AttractionDocument & { _id: Types.ObjectId }>();
+  for (const doc of docs) {
+    map.set(doc._id.toString(), doc);
+  }
+  return map;
 }

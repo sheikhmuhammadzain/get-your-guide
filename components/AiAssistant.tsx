@@ -292,7 +292,7 @@ export default function AiAssistant() {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          className="flex flex-col overflow-hidden rounded-2xl border border-border-default bg-surface-base shadow-2xl"
           style={{
             width: "min(92vw, 400px)",
             height: "min(80vh, 640px)",
@@ -300,19 +300,19 @@ export default function AiAssistant() {
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 bg-white px-4 py-3.5">
+          <div className="flex items-center justify-between border-b border-border-soft bg-surface-base px-4 py-3.5">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand">
                 <Bot className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900 leading-none">Turkey AI Agent</p>
+                <p className="text-sm font-semibold text-text-primary leading-none">Turkey AI Agent</p>
                 <p className="mt-0.5 text-xs text-emerald-500 font-medium">● Online</p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-text-subtle transition-colors hover:bg-surface-subtle hover:text-text-body"
               aria-label="Close"
             >
               <ChevronDown className="h-4 w-4" />
@@ -323,7 +323,7 @@ export default function AiAssistant() {
           <div
             ref={scrollRef}
             className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-4"
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}
+            style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border-default) transparent" }}
           >
             {messages.map((message) => (
               <div
@@ -332,7 +332,7 @@ export default function AiAssistant() {
               >
                 {/* Avatar */}
                 {message.role === "assistant" && (
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 border border-blue-100">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-brand-soft border border-border-info">
                     <Bot className="h-3.5 w-3.5 text-brand" />
                   </div>
                 )}
@@ -343,7 +343,7 @@ export default function AiAssistant() {
                     className={
                       message.role === "user"
                         ? "rounded-2xl rounded-tr-sm bg-brand px-3.5 py-2.5 text-sm text-white"
-                        : "rounded-2xl rounded-tl-sm border border-gray-100 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-800"
+                        : "rounded-2xl rounded-tl-sm border border-border-soft bg-surface-muted px-3.5 py-2.5 text-sm text-text-body"
                     }
                   >
                     {message.role === "assistant" ? (
@@ -368,11 +368,11 @@ export default function AiAssistant() {
                         <a
                           key={`${message.id}-${item.productId}`}
                           href={item.url}
-                          className="group flex items-start gap-2.5 rounded-xl border border-gray-200 bg-white p-2.5 text-xs transition-colors hover:border-brand/40 hover:bg-blue-50/40"
+                          className="group flex items-start gap-2.5 rounded-xl border border-border-default bg-surface-base p-2.5 text-xs transition-colors hover:border-brand/40 hover:bg-surface-brand-subtle"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-800 truncate group-hover:text-brand transition-colors">{item.title}</p>
-                            <p className="mt-0.5 text-gray-400">{item.location} · ⭐ {item.rating.toFixed(1)}</p>
+                            <p className="font-semibold text-text-heading truncate group-hover:text-brand transition-colors">{item.title}</p>
+                            <p className="mt-0.5 text-text-subtle">{item.location} · ⭐ {item.rating.toFixed(1)}</p>
                           </div>
                           <p className="shrink-0 font-semibold text-brand">
                             <CurrencyAmount amount={item.price} baseCurrency={item.currency} />
@@ -399,10 +399,10 @@ export default function AiAssistant() {
             {/* Standalone typing indicator when no placeholder exists yet */}
             {isSending && messages[messages.length - 1]?.role === "user" && (
               <div className="flex gap-2.5">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 border border-blue-100">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-brand-soft border border-border-info">
                   <Bot className="h-3.5 w-3.5 text-brand" />
                 </div>
-                <div className="rounded-2xl rounded-tl-sm border border-gray-100 bg-gray-50 px-3.5 py-2.5">
+                <div className="rounded-2xl rounded-tl-sm border border-border-soft bg-surface-muted px-3.5 py-2.5">
                   <TypingDots />
                 </div>
               </div>
@@ -410,8 +410,8 @@ export default function AiAssistant() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-100 bg-white p-3">
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-brand/50 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand/10 transition-all">
+          <div className="border-t border-border-soft bg-surface-base p-3">
+            <div className="flex items-center gap-2 rounded-xl border border-border-default bg-surface-muted px-3 py-2 focus-within:border-brand/50 focus-within:bg-surface-base focus-within:ring-2 focus-within:ring-brand/10 transition-all">
               <input
                 type="text"
                 value={input}
@@ -423,7 +423,7 @@ export default function AiAssistant() {
                   }
                 }}
                 placeholder="Ask anything about Turkey…"
-                className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-sm text-text-body placeholder:text-text-subtle focus:outline-none"
               />
               <button
                 disabled={isSending || !input.trim()}
@@ -460,7 +460,7 @@ function TypingDots() {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-bounce"
+          className="h-1.5 w-1.5 rounded-full bg-text-subtle animate-bounce"
           style={{ animationDelay: `${i * 0.15}s`, animationDuration: "0.9s" }}
         />
       ))}

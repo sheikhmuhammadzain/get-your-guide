@@ -73,9 +73,9 @@ export default function SearchResultsClient({ initialQuery }: { initialQuery: st
           event.preventDefault();
           setDebouncedQuery(input.trim());
         }}
-        className="relative mb-6 flex items-center rounded-2xl border border-gray-300 bg-white px-4 py-2.5 shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100"
+        className="relative mb-6 flex items-center rounded-2xl border border-border-default bg-surface-base px-4 py-2.5 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/10"
       >
-        <Search className="h-5 w-5 text-gray-400" />
+        <Search className="h-5 w-5 text-text-subtle" />
         <input
           type="search"
           value={input}
@@ -92,7 +92,7 @@ export default function SearchResultsClient({ initialQuery }: { initialQuery: st
         </button>
 
         {focused && suggestions.length > 0 ? (
-          <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 rounded-2xl border border-gray-200 bg-white shadow-2xl">
+          <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 rounded-2xl border border-border-soft bg-background shadow-2xl">
             <ul className="max-h-80 overflow-y-auto py-2">
               {suggestions.map((product) => (
                 <li key={product.id}>
@@ -103,10 +103,10 @@ export default function SearchResultsClient({ initialQuery }: { initialQuery: st
                       setDebouncedQuery(product.title);
                       setFocused(false);
                     }}
-                    className="w-full px-4 py-2.5 text-left hover:bg-gray-50"
+                    className="w-full px-4 py-2.5 text-left hover:bg-surface-subtle"
                   >
-                    <p className="text-sm font-semibold text-gray-900">{product.title}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-semibold text-text-primary">{product.title}</p>
+                    <p className="text-xs text-text-muted">
                       {product.location} | {product.category}
                     </p>
                   </button>

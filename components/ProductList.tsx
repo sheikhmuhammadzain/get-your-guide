@@ -89,9 +89,9 @@ export default function ProductList({
 
   if (filteredProducts.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+      <div className="rounded-2xl border border-border-default bg-surface-muted p-6">
         <p className="text-lg font-semibold text-text-heading">No matching experiences found</p>
-        <p className="mt-2 text-sm text-gray-600">Try another destination keyword like Istanbul, Cappadocia, or Ephesus.</p>
+        <p className="mt-2 text-sm text-text-body">Try another destination keyword like Istanbul, Cappadocia, or Ephesus.</p>
       </div>
     );
   }

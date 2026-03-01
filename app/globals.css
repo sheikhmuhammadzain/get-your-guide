@@ -37,6 +37,43 @@
   --metric-secondary: #f04438;
 }
 
+.dark {
+  --background: #191B20;
+  --foreground: #e4e6ea;
+  --surface-base: #1f2128;
+  --surface-muted: #15171c;
+  --surface-subtle: #252830;
+  --surface-alt: #1c1e24;
+  --surface-info: #172030;
+  --surface-brand-soft: #162040;
+  --surface-brand-subtle: #1a2440;
+  --surface-danger-soft: #301518;
+  --surface-danger-subtle: #2e1815;
+  --surface-warning-soft: #302810;
+  --surface-success-soft: #10301c;
+  --surface-count-chip: #2a2d35;
+  --text-primary: #e4e6ea;
+  --text-heading: #f2f3f5;
+  --text-body: #c8cbd0;
+  --text-muted: #8b8f98;
+  --text-subtle: #5c6070;
+  --text-brand: #6db3f8;
+  --text-danger: #f87171;
+  --border-default: #2e3038;
+  --border-strong: #3c3f48;
+  --border-soft: #272a32;
+  --border-subtle: #222530;
+  --border-info: #1e3a5f;
+  --border-danger: #5c2028;
+  --border-danger-subtle: #4a1c1c;
+  --border-warning: #5c4a10;
+  --border-success: #1a4a2e;
+  --brand: #4a9ef5;
+  --brand-hover: #6db3f8;
+  --metric-primary: #0ba5ec;
+  --metric-secondary: #f04438;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -139,7 +176,7 @@ a {
 
 .prose-chat strong {
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .prose-chat em {
@@ -148,8 +185,8 @@ a {
 
 .prose-chat code {
   font-size: 0.75rem;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   padding: 0.1em 0.35em;
   font-family: ui-monospace, "Cascadia Code", monospace;
@@ -173,10 +210,10 @@ a {
 }
 
 .prose-chat blockquote {
-  border-left: 3px solid #e5e7eb;
+  border-left: 3px solid var(--border-default);
   padding-left: 0.75rem;
   margin: 0.4rem 0;
-  color: #6b7280;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -186,7 +223,7 @@ a {
   font-weight: 600;
   line-height: 1.3;
   margin: 0.6rem 0 0.25rem;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .prose-chat h1 {
@@ -200,7 +237,7 @@ a {
 }
 
 .prose-chat a {
-  color: #0071eb;
+  color: var(--brand);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -214,18 +251,19 @@ a {
 
 .prose-chat th,
 .prose-chat td {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   padding: 0.3rem 0.5rem;
   text-align: left;
 }
 
 .prose-chat th {
-  background: #f9fafb;
+  background: var(--surface-subtle);
   font-weight: 600;
 }
 
 .prose-chat hr {
   border: none;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-default);
   margin: 0.6rem 0;
 }
+

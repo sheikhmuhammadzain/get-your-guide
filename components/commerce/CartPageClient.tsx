@@ -170,7 +170,7 @@ export default function CartPageClient() {
             return (
               <article
                 key={item.productId}
-                className="flex gap-4 rounded-2xl border border-border-soft bg-white p-4 transition-colors sm:p-5"
+                className="flex gap-4 rounded-2xl border border-border-soft bg-surface-base p-4 transition-colors sm:p-5"
               >
                 {/* Thumbnail */}
                 <Link
@@ -267,7 +267,7 @@ export default function CartPageClient() {
         </div>
 
         {/* ─── Order Summary ──────────────────────── */}
-        <aside className="h-fit space-y-5 rounded-2xl border border-border-soft bg-white p-6 lg:sticky lg:top-24">
+        <aside className="h-fit space-y-5 rounded-2xl border border-border-soft bg-surface-base p-6 lg:sticky lg:top-24">
           <h2 className="text-sm font-bold uppercase tracking-wide text-text-primary">
             Order Summary
           </h2>

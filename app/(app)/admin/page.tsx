@@ -15,14 +15,14 @@ export default async function AdminPanelPage() {
   } catch {
     return (
       <main className="flex min-h-screen items-center justify-center bg-surface-subtle p-6 text-text-heading">
-        <section className="w-full max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+        <section className="w-full max-w-md rounded-2xl border border-red-200 bg-surface-base p-6 shadow-sm">
           <h1 className="text-xl font-semibold text-red-900">Admin Access Required</h1>
           <p className="mt-2 text-sm text-red-800">You do not have permission to open the admin workspace.</p>
           <div className="mt-5 flex gap-2">
             <Link href="/auth/signin" className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover">
               Sign In
             </Link>
-            <Link href="/" className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">
+            <Link href="/" className="rounded-full border border-border-strong px-4 py-2 text-sm font-semibold text-text-body">
               Home
             </Link>
           </div>

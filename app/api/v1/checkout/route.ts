@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     });
 
     const total = normalized.reduce((sum, item) => sum + item.lineTotal, 0);
-    const orderCode = `GYG-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const orderCode = `STA-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
     const currency = getProductById(normalized[0].productId)?.currency ?? "EUR";
 
     const order = await createOrderService({

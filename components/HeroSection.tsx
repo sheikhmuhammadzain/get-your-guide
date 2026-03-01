@@ -79,7 +79,7 @@ export default function HeroSection() {
                 event.preventDefault();
                 submitSearch();
               }}
-              className="relative flex items-center w-full h-14 md:h-16 rounded-full bg-white shadow-lg overflow-visible pl-4 md:pl-6 pr-2"
+              className="relative flex items-center w-full h-14 md:h-16 rounded-full bg-background shadow-lg overflow-visible pl-4 md:pl-6 pr-2"
             >
               <div className="flex-1 flex items-center h-full">
                 <input
@@ -89,7 +89,7 @@ export default function HeroSection() {
                   onFocus={() => setFocused(true)}
                   onChange={(event) => setInput(event.target.value)}
                   placeholder="Find places and things to do in Turkey"
-                  className="w-full h-full outline-none text-gray-700 placeholder-gray-500 font-medium text-base md:text-lg bg-transparent"
+                  className="w-full h-full outline-none text-text-body placeholder-text-subtle font-medium text-base md:text-lg bg-transparent"
                 />
               </div>
               <button
@@ -100,17 +100,17 @@ export default function HeroSection() {
               </button>
 
               {focused && suggestions.length > 0 ? (
-                <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 rounded-2xl border border-gray-200 bg-white shadow-2xl">
+                <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 rounded-2xl border border-border-soft bg-background shadow-2xl">
                   <ul className="max-h-80 overflow-y-auto py-2">
                     {suggestions.map((product) => (
                       <li key={product.id}>
                         <button
                           type="button"
                           onClick={() => submitSearch(product.title)}
-                          className="w-full px-4 py-2.5 text-left hover:bg-gray-50"
+                          className="w-full px-4 py-2.5 text-left hover:bg-surface-subtle"
                         >
-                          <p className="text-sm font-semibold text-gray-900">{product.title}</p>
-                          <p className="text-xs text-gray-500">{product.location} | {product.category}</p>
+                          <p className="text-sm font-semibold text-text-primary">{product.title}</p>
+                          <p className="text-xs text-text-muted">{product.location} | {product.category}</p>
                         </button>
                       </li>
                     ))}
@@ -121,11 +121,11 @@ export default function HeroSection() {
           </div>
 
           <div className="relative w-full max-w-sm pt-2 md:pt-4">
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl max-w-[400px]">
+            <div className="bg-background/95 backdrop-blur-sm rounded-xl p-4 shadow-xl max-w-[400px]">
               <div className="mb-3">
                 <h3 className="text-text-heading font-bold text-xl sm:text-2xl mb-2">Continue planning your trip</h3>
               </div>
-              <Link href="/products/2" className="flex gap-3 md:gap-4 bg-white rounded-lg p-3 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+              <Link href="/products/2" className="flex gap-3 md:gap-4 bg-surface-base rounded-lg p-3 border border-border-soft hover:border-brand/20 transition-colors">
                 <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
                   <Image
                     src="https://picsum.photos/seed/istanbul-planning/200/200"
@@ -136,10 +136,10 @@ export default function HeroSection() {
                 </div>
                 <div className="flex flex-col justify-between py-1 min-w-0">
                   <div>
-                    <h4 className="font-bold text-sm leading-tight text-gray-900 mb-1 line-clamp-2">
+                    <h4 className="font-bold text-sm leading-tight text-text-primary mb-1 line-clamp-2">
                       Istanbul: Skip-the-line Hagia Sophia and Basilica Cistern Tour
                     </h4>
-                    <p className="text-xs text-gray-600 mb-1">2 hours | Skip the line</p>
+                    <p className="text-xs text-text-muted mb-1">2 hours | Skip the line</p>
                     <div className="flex items-center gap-1">
                       <div className="flex text-yellow-400">
                         <Star className="w-3 h-3 fill-current" />
@@ -148,10 +148,10 @@ export default function HeroSection() {
                         <Star className="w-3 h-3 fill-current" />
                         <Star className="w-3 h-3 fill-current" />
                       </div>
-                      <span className="text-xs text-gray-600">4.8</span>
+                      <span className="text-xs text-text-muted">4.8</span>
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-text-primary">
                     From <span className="font-bold text-lg text-text-heading">$42</span>
                   </div>
                 </div>

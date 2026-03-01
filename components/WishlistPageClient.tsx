@@ -71,14 +71,14 @@ export default function WishlistPageClient() {
   }
 
   if (loading) {
-    return <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-gray-700">Loading wishlist...</div>;
+    return <div className="rounded-xl border border-border-default bg-surface-muted p-6 text-text-body">Loading wishlist...</div>;
   }
 
   if (wishlistProducts.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-        <p className="text-gray-700">No wishlist items yet.</p>
-        <p className="mt-2 text-sm text-gray-600">Browse curated attractions and add favorites as you plan.</p>
+      <div className="rounded-xl border border-border-default bg-surface-muted p-6">
+        <p className="text-text-body">No wishlist items yet.</p>
+        <p className="mt-2 text-sm text-text-body">Browse curated attractions and add favorites as you plan.</p>
         <Link
           href="/attractions"
           className="mt-4 inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white"
@@ -92,19 +92,19 @@ export default function WishlistPageClient() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {wishlistProducts.map((product) => (
-        <article key={product.id} className="rounded-xl border border-gray-200 bg-white p-4">
+        <article key={product.id} className="rounded-xl border border-border-default bg-surface-base p-4">
           <h2 className="text-lg font-semibold">{product.title}</h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-text-body">
             {product.location} | {product.duration}
           </p>
-          <p className="mt-2 text-sm text-gray-700">{product.summary}</p>
+          <p className="mt-2 text-sm text-text-body">{product.summary}</p>
           <p className="mt-3 text-sm font-semibold">
             <CurrencyAmount amount={product.price} baseCurrency={product.currency} />
           </p>
           <div className="mt-4 flex gap-2">
             <Link
               href={`/products/${product.id}`}
-              className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700"
+              className="rounded-full border border-border-strong px-4 py-2 text-sm font-semibold text-text-body"
             >
               View
             </Link>

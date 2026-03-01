@@ -317,18 +317,18 @@ export default function ItineraryGenerator() {
 
   /* ── shared select class ── */
   const selectCls =
-    'w-full h-11 pl-10 pr-4 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 font-medium outline-none appearance-none cursor-pointer transition-colors focus:border-brand focus:ring-2 focus:ring-brand/10';
+    'w-full h-11 pl-10 pr-4 bg-surface-base border border-border-default rounded-lg text-sm text-text-body font-medium outline-none appearance-none cursor-pointer transition-colors focus:border-brand focus:ring-2 focus:ring-brand/10';
 
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-2xl p-6 md:p-8 mb-8">
+    <div className="w-full bg-surface-base border border-border-default rounded-2xl p-6 md:p-8 mb-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-7">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand">
           <Sparkles className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-gray-900 leading-tight">AI Itinerary Planner</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Plan your perfect trip to Turkey in seconds</p>
+          <h2 className="text-lg font-bold text-text-primary leading-tight">AI Itinerary Planner</h2>
+          <p className="text-xs text-text-subtle mt-0.5">Plan your perfect trip to Turkey in seconds</p>
         </div>
       </div>
 
@@ -336,11 +336,11 @@ export default function ItineraryGenerator() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Destinations */}
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">
             Destinations (up to 4)
           </label>
-          <div className="flex flex-wrap gap-1.5 rounded-lg border border-gray-200 bg-white p-2">
-            <MapPin className="mt-1 h-4 w-4 text-gray-300" />
+          <div className="flex flex-wrap gap-1.5 rounded-lg border border-border-default bg-surface-base p-2">
+            <MapPin className="mt-1 h-4 w-4 text-text-subtle" />
             {DESTINATIONS.map((item) => {
               const active = destinations.includes(item);
               return (
@@ -350,7 +350,7 @@ export default function ItineraryGenerator() {
                   onClick={() => toggleDestination(item)}
                   className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${active
                     ? 'border-brand bg-brand text-white'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    : 'border-border-default bg-surface-base text-text-body hover:bg-surface-subtle'
                     }`}
                 >
                   {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -358,16 +358,16 @@ export default function ItineraryGenerator() {
               );
             })}
           </div>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-text-subtle">
             Route: {destinations.map((item) => item.charAt(0).toUpperCase() + item.slice(1)).join(' -> ')}
           </p>
         </div>
 
         {/* How long */}
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">How long?</label>
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">How long?</label>
           <div className="relative">
-            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-subtle pointer-events-none" />
             <select value={duration} onChange={(e) => setDuration(e.target.value)} className={selectCls}>
               <option value="1-3">1-3 Days</option>
               <option value="4-7">4-7 Days</option>
@@ -379,9 +379,9 @@ export default function ItineraryGenerator() {
 
         {/* Interest */}
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">Interest</label>
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">Interest</label>
           <div className="relative">
-            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-subtle pointer-events-none" />
             <select value={interest} onChange={(e) => setInterest(e.target.value as InterestTag)} className={selectCls}>
               <option value="culture">Culture & History</option>
               <option value="adventure">Adventure</option>
@@ -394,9 +394,9 @@ export default function ItineraryGenerator() {
 
         {/* Budget */}
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">Budget</label>
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">Budget</label>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-subtle pointer-events-none" />
             <select value={budget} onChange={(e) => setBudget(e.target.value as BudgetLevel)} className={selectCls}>
               <option value="budget">Budget Friendly</option>
               <option value="standard">Standard</option>
@@ -409,11 +409,11 @@ export default function ItineraryGenerator() {
       {/* Row 2 — Transport */}
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">Transport from</label>
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">Transport from</label>
           <select
             value={transportFrom}
             onChange={(e) => setTransportFrom(e.target.value)}
-            className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-800 font-medium outline-none appearance-none cursor-pointer focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors bg-white"
+            className="h-11 w-full rounded-lg border border-border-default px-3 text-sm text-text-body font-medium outline-none appearance-none cursor-pointer focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors bg-surface-base"
           >
             {DESTINATIONS.map((item) => (
               <option key={`from-${item}`} value={item}>{item.charAt(0).toUpperCase() + item.slice(1)}</option>
@@ -422,11 +422,11 @@ export default function ItineraryGenerator() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">Transport mode</label>
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">Transport mode</label>
           <select
             value={transportMode}
             onChange={(e) => setTransportMode(e.target.value as 'car' | 'bus' | 'flight')}
-            className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-800 font-medium outline-none appearance-none cursor-pointer focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors bg-white"
+            className="h-11 w-full rounded-lg border border-border-default px-3 text-sm text-text-body font-medium outline-none appearance-none cursor-pointer focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors bg-surface-base"
           >
             <option value="bus">Bus</option>
             <option value="car">Car</option>
@@ -435,12 +435,12 @@ export default function ItineraryGenerator() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-widest">Departure date</label>
+          <label className="block text-[10px] font-semibold text-text-subtle mb-1.5 uppercase tracking-widest">Departure date</label>
           <input
             type="date"
             value={transportDepartureDate}
             onChange={(e) => setTransportDepartureDate(e.target.value)}
-            className="h-11 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-800 font-medium outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors bg-white"
+            className="h-11 w-full rounded-lg border border-border-default px-3 text-sm text-text-body font-medium outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors bg-surface-base"
           />
         </div>
       </div>
@@ -448,7 +448,7 @@ export default function ItineraryGenerator() {
       {/* Row 3 — Live Data Cards */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Weather Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-white p-4">
+        <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50">
               <CloudSun className="h-5 w-5 text-sky-500" />
@@ -488,7 +488,7 @@ export default function ItineraryGenerator() {
         </div>
 
         {/* Currency Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-white p-4">
+        <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
               <Banknote className="h-5 w-5 text-emerald-500" />
@@ -525,7 +525,7 @@ export default function ItineraryGenerator() {
         </div>
 
         {/* Transport Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-white p-4">
+        <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50">
               <Bus className="h-5 w-5 text-violet-500" />
@@ -567,14 +567,14 @@ export default function ItineraryGenerator() {
       </div>
 
       {/* Divider + Actions */}
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-5">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-5">
         <div className="flex flex-wrap gap-2">
           {error && <p className="text-xs text-red-500">{error}</p>}
-          {saveResult && <p className="text-xs text-gray-500">{saveResult}</p>}
+          {saveResult && <p className="text-xs text-text-muted">{saveResult}</p>}
           {savedItineraryId && (
             <Link
               href={`/itineraries/${savedItineraryId}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-border-strong hover:bg-surface-subtle"
             >
               View saved itinerary →
             </Link>
@@ -586,7 +586,7 @@ export default function ItineraryGenerator() {
             <button
               disabled={saving}
               onClick={handleSave}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-body transition-colors hover:bg-surface-subtle disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
               {saving ? 'Saving…' : 'Save'}
@@ -605,18 +605,18 @@ export default function ItineraryGenerator() {
 
       {/* Results preview */}
       {result && (
-        <div className="mt-5 rounded-xl border border-gray-200 bg-white p-5">
+        <div className="mt-5 rounded-xl border border-border-default bg-surface-base p-5">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h3 className="font-bold text-base text-gray-900">{result.title}</h3>
-            <span className="shrink-0 text-xs font-medium text-gray-400">{result.totalEstimatedCostTRY} TRY</span>
+            <h3 className="font-bold text-base text-text-primary">{result.title}</h3>
+            <span className="shrink-0 text-xs font-medium text-text-subtle">{result.totalEstimatedCostTRY} TRY</span>
           </div>
           <div className="space-y-2">
             {result.days.slice(0, 3).map((day) => (
-              <div key={day.day} className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5">
+              <div key={day.day} className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-subtle px-3 py-2.5">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-[11px] font-bold text-brand">{day.day}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{day.city}</p>
-                  <p className="text-[11px] text-gray-400">{day.items.length} activities · {day.notes[0] ?? 'Curated by AI'}</p>
+                  <p className="text-sm font-medium text-text-body truncate">{day.city}</p>
+                  <p className="text-[11px] text-text-muted">{day.items.length} activities · {day.notes[0] ?? 'Curated by AI'}</p>
                 </div>
               </div>
             ))}

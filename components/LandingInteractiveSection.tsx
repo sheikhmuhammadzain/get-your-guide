@@ -8,9 +8,9 @@ import ProductList from '@/components/ProductList';
 const ItineraryGenerator = dynamic(() => import('@/components/ItineraryGenerator'), {
   ssr: false,
   loading: () => (
-    <div className="w-full bg-blue-50/50 p-6 md:p-8 rounded-2xl border border-blue-100 shadow-lg mb-8">
-      <div className="h-6 w-56 rounded bg-blue-100 animate-pulse mb-4" />
-      <div className="h-12 rounded bg-white/80 animate-pulse" />
+    <div className="w-full bg-surface-subtle p-6 md:p-8 rounded-2xl border border-border-soft shadow-lg mb-8">
+      <div className="h-6 w-56 rounded bg-surface-count-chip animate-pulse mb-4" />
+      <div className="h-12 rounded bg-surface-base animate-pulse" />
     </div>
   ),
 });
@@ -18,7 +18,7 @@ const ItineraryGenerator = dynamic(() => import('@/components/ItineraryGenerator
 const TurkeyMap = dynamic(() => import('@/components/TurkeyMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
+    <div className="w-full h-full flex items-center justify-center text-sm text-text-muted">
       Loading map...
     </div>
   ),
@@ -37,12 +37,12 @@ export default function LandingInteractiveSection({ searchQuery }: { searchQuery
         <h1 className="text-text-heading font-bold text-xl md:text-2xl flex items-baseline gap-2">
           {normalizedQuery ? (
             <>
-              <span className="text-gray-500 font-normal">{resultCount} results for:</span>
+              <span className="text-text-muted font-normal">{resultCount} results for:</span>
               <span>{normalizedQuery}</span>
             </>
           ) : (
             <>
-              <span className="text-gray-500 font-normal">Showing results for:</span>
+              <span className="text-text-muted font-normal">Showing results for:</span>
               <span>Turkey AI Itinerary</span>
             </>
           )}
@@ -51,7 +51,7 @@ export default function LandingInteractiveSection({ searchQuery }: { searchQuery
         <div className="flex items-center gap-4 md:gap-6">
           <button
             onClick={() => setShowMap((prev) => !prev)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-surface-base border border-border-default hover:bg-surface-subtle rounded-lg text-sm font-semibold text-text-body transition-colors"
           >
             <Map className="w-4 h-4" />
             {showMap ? 'Hide Map' : 'Show Map'}
@@ -60,7 +60,7 @@ export default function LandingInteractiveSection({ searchQuery }: { searchQuery
           <div className="flex items-center gap-1 text-sm text-text-heading">
             <Info className="w-4 h-4" />
             <span className="mr-1">Sort by:</span>
-            <span className="font-bold border-b border-dotted border-black cursor-pointer flex items-center gap-1">
+            <span className="font-bold border-b border-dotted border-text-primary cursor-pointer flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-blue-600" />
               AI Recommended
             </span>
@@ -75,14 +75,14 @@ export default function LandingInteractiveSection({ searchQuery }: { searchQuery
         </div>
 
         {showMap && (
-          <div className="hidden md:block w-1/2 lg:w-2/5 sticky top-[200px] h-[calc(100vh-220px)] rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 animate-in fade-in slide-in-from-right-10 duration-300">
+          <div className="hidden md:block w-1/2 lg:w-2/5 sticky top-[200px] h-[calc(100vh-220px)] rounded-xl overflow-hidden shadow-lg border border-border-default bg-surface-subtle animate-in fade-in slide-in-from-right-10 duration-300">
             <TurkeyMap />
           </div>
         )}
       </div>
 
       {showMap ? (
-        <div className="mt-5 h-[360px] rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-100 md:hidden">
+        <div className="mt-5 h-[360px] rounded-xl overflow-hidden shadow-lg border border-border-default bg-surface-subtle md:hidden">
           <TurkeyMap />
         </div>
       ) : null}

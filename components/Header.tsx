@@ -1,16 +1,17 @@
 ﻿
 'use client';
 
-import { Heart, ShoppingCart, Globe, Settings, User, LogOut, LogIn, Shield, ChevronDown } from 'lucide-react';
+import { Heart, ShoppingCart, Globe, Settings, User, LogOut, LogIn, Shield, ChevronDown, Sun, Moon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
-import { GETYOURGUIDE_LOGO_DATA_URI } from '@/components/branding/logo';
+import { SMARTTRIPAI_LOGO_DATA_URI as GETYOURGUIDE_LOGO_DATA_URI } from '@/components/branding/logo';
 import { products } from '@/lib/data';
 import LanguageCurrencyDialog from '@/components/LanguageCurrencyDialog';
 import { useAppPreferences } from '@/lib/preferences-client';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function Header() {
   const [showSearch, setShowSearch] = useState(false);
@@ -29,6 +30,7 @@ export default function Header() {
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLFormElement | null>(null);
   const { preferences, setPreferences } = useAppPreferences();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -216,16 +218,16 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-background border-b border-border-soft transition-colors">
       <div className="max-w-[1320px] mx-auto px-3 sm:px-4 md:px-6 h-[72px] md:h-[80px] flex items-center justify-between gap-2 md:gap-4">
         {/* Logo */}
-        <Link href="/" className="shrink-0 flex items-center gap-1" aria-label="GetYourGuide Home">
+        <Link href="/" className="shrink-0 flex items-center gap-1" aria-label="Smart Trip AI Home">
           <Image
             src={GETYOURGUIDE_LOGO_DATA_URI}
-            alt="GetYourGuide - Travel experiences and tours"
-            width={56}
-            height={64}
-            className="h-10 md:h-12 w-auto"
+            alt="Smart Trip AI - Travel experiences and tours"
+            width={80}
+            height={96}
+            className="h-14 md:h-16 w-auto"
             unoptimized
           />
         </Link>
@@ -240,7 +242,7 @@ export default function Header() {
               event.preventDefault();
               submitSearch();
             }}
-            className="relative flex items-center w-full h-11 rounded-full border border-gray-300 shadow-sm hover:shadow-md transition-shadow bg-white overflow-visible pl-5 pr-1 py-1 group focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500"
+            className="relative flex items-center w-full h-11 rounded-full border border-border-default transition-shadow bg-background overflow-visible pl-5 pr-1 py-1 group focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand"
           >
             {/* Find places text usually goes here but screenshot shows just placeholder */}
             <input
@@ -252,24 +254,23 @@ export default function Header() {
               onFocus={() => setSearchFocused(true)}
               onChange={(event) => setSearchInput(event.target.value)}
               aria-label="Search destination"
-              className="flex-1 h-full outline-none text-gray-700 placeholder-gray-500 font-medium text-[15px]"
+              className="flex-1 h-full outline-none text-text-body placeholder-text-subtle font-medium text-[15px] bg-transparent"
             />
             <button type="submit" aria-label="Plan trip" className="h-9 px-6 bg-brand hover:bg-brand-hover text-white font-bold rounded-full transition-colors text-[14px] flex items-center gap-2">
               Search
             </button>
 
             {searchFocused && headerSuggestions.length > 0 ? (
-              <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-2xl border border-gray-200 bg-white shadow-2xl">
+              <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-2xl border border-border-soft bg-background shadow-2xl">
                 <ul className="max-h-80 overflow-y-auto py-2">
                   {headerSuggestions.map((product) => (
                     <li key={product.id}>
                       <button
                         type="button"
                         onClick={() => submitSearch(product.title)}
-                        className="w-full px-4 py-2.5 text-left hover:bg-gray-50"
-                      >
-                        <p className="text-sm font-semibold text-gray-900">{product.title}</p>
-                        <p className="text-xs text-gray-500">{product.location} | {product.category}</p>
+                        className="w-full px-4 py-2.5 text-left hover:bg-surface-subtle">
+                        <p className="text-sm font-semibold text-text-primary">{product.title}</p>
+                        <p className="text-xs text-text-muted">{product.location} | {product.category}</p>
                       </button>
                     </li>
                   ))}
@@ -282,7 +283,7 @@ export default function Header() {
 
         {/* Navigation Actions */}
         <nav className="flex items-center gap-2 sm:gap-2 md:gap-6" aria-label="Main navigation">
-          <Link href="/wishlist" className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View wishlist">
+          <Link href="/wishlist" className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-text-muted hover:text-text-primary group" aria-label="View wishlist">
             <div className="relative">
               <Heart
                 className={`w-5 h-5 md:w-6 md:h-6 stroke-[1.6] ${wishlistCount > 0 ? 'fill-red-500 text-red-500' : ''
@@ -297,7 +298,7 @@ export default function Header() {
             </div>
             <span className="text-[11px] font-medium hidden md:block">Wishlist</span>
           </Link>
-          <Link href="/cart" className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group" aria-label="View cart">
+          <Link href="/cart" className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-text-muted hover:text-text-primary group" aria-label="View cart">
             <div className="relative">
               <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" aria-hidden="true" />
               {cartCount > 0 ? (
@@ -310,7 +311,7 @@ export default function Header() {
           </Link>
           <button
             onClick={() => setPreferencesOpen(true)}
-            className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group"
+            className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-text-muted hover:text-text-primary group"
             aria-label="Change language and currency"
           >
             <Globe className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" aria-hidden="true" />
@@ -321,7 +322,7 @@ export default function Header() {
           <div ref={accountRef} className="relative">
             <button
               onClick={() => setAccountOpen((prev) => !prev)}
-              className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 group"
+              className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-text-muted hover:text-text-primary group"
               aria-label="Open account menu"
             >
               <div className="flex items-center gap-0.5">
@@ -334,45 +335,45 @@ export default function Header() {
             </button>
 
             {accountOpen && (
-              <div className="absolute right-0 top-[calc(100%+10px)] w-56 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-xl">
+              <div className="absolute right-0 top-[calc(100%+10px)] w-56 rounded-2xl border border-border-soft bg-background p-1.5 shadow-xl">
                 {accountLoading ? (
-                  <p className="px-3 py-2 text-sm text-gray-400">Loading…</p>
+                  <p className="px-3 py-2 text-sm text-text-subtle">Loading…</p>
                 ) : isAuthenticated ? (
                   <>
-                    <div className="mb-1 rounded-xl bg-gray-50 px-3 py-2.5">
-                      <p className="text-[10px] uppercase tracking-widest text-gray-400">Signed in as</p>
-                      <p className="mt-0.5 text-sm font-semibold text-gray-900 truncate">{userName ?? 'Traveler'}</p>
+                    <div className="mb-1 rounded-xl bg-surface-subtle px-3 py-2.5">
+                      <p className="text-[10px] uppercase tracking-widest text-text-subtle">Signed in as</p>
+                      <p className="mt-0.5 text-sm font-semibold text-text-primary truncate">{userName ?? 'Traveler'}</p>
                     </div>
                     <Link
                       href="/dashboard"
                       onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-text-body hover:bg-surface-subtle transition-colors"
                     >
-                      <User className="h-4 w-4 text-gray-400" />
+                      <User className="h-4 w-4 text-text-subtle" />
                       Dashboard
                     </Link>
                     <Link
                       href="/user/settings"
                       onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-text-body hover:bg-surface-muted transition-colors"
                     >
-                      <Settings className="h-4 w-4 text-gray-400" />
+                      <Settings className="h-4 w-4 text-text-subtle" />
                       Settings
                     </Link>
                     {isAdmin && (
                       <Link
                         href="/admin"
                         onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-text-body hover:bg-surface-muted transition-colors"
                       >
-                        <Shield className="h-4 w-4 text-gray-400" />
+                        <Shield className="h-4 w-4 text-text-subtle" />
                         Admin Panel
                       </Link>
                     )}
-                    <div className="my-1 border-t border-gray-100" />
+                    <div className="my-1 border-t border-border-subtle" />
                     <button
                       onClick={() => void handleLogout()}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-text-danger hover:bg-surface-danger-soft transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
                       Sign out
@@ -383,17 +384,17 @@ export default function Header() {
                     <Link
                       href="/auth/signin"
                       onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-text-body hover:bg-surface-subtle transition-colors"
                     >
-                      <LogIn className="h-4 w-4 text-gray-400" />
+                      <LogIn className="h-4 w-4 text-text-subtle" />
                       Sign In
                     </Link>
                     <Link
                       href="/auth/signup"
                       onClick={() => setAccountOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-text-body hover:bg-surface-muted transition-colors"
                     >
-                      <User className="h-4 w-4 text-gray-400" />
+                      <User className="h-4 w-4 text-text-subtle" />
                       Create Account
                     </Link>
                   </>
@@ -401,25 +402,40 @@ export default function Header() {
               </div>
             )}
           </div>
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 md:p-0 flex flex-col items-center gap-1 text-text-muted hover:text-text-primary group"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+            ) : (
+              <Moon className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+            )}
+            <span className="text-[11px] font-medium hidden md:block">
+              {theme === 'dark' ? 'Light' : 'Dark'}
+            </span>
+          </button>
         </nav>
       </div>
 
       {/* Sub-navigation */}
       <div className="max-w-[1320px] mx-auto px-3 sm:px-4 md:px-6">
-        <nav className="flex items-center gap-5 md:gap-8 py-3 text-[13px] md:text-[14px] text-gray-500 font-medium border-t border-gray-100/50 overflow-x-auto no-scrollbar whitespace-nowrap" aria-label="Secondary navigation">
-          <Link href="/attractions" className="hover:text-gray-900 flex items-center gap-1 group">
+        <nav className="flex items-center gap-5 md:gap-8 py-3 text-[13px] md:text-[14px] text-text-muted font-medium border-t border-border-subtle overflow-x-auto no-scrollbar whitespace-nowrap" aria-label="Secondary navigation">
+          <Link href="/attractions" className="hover:text-text-primary flex items-center gap-1 group">
             Places to see
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" className="group-hover:text-blue-600 transition-colors" aria-hidden="true">
               <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <Link href="/planner" className="hover:text-gray-900 flex items-center gap-1 group">
+          <Link href="/planner" className="hover:text-text-primary flex items-center gap-1 group">
             Things to do
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" className="group-hover:text-blue-600 transition-colors" aria-hidden="true">
               <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <Link href="/assistant" className="hover:text-gray-900 flex items-center gap-1 group">
+          <Link href="/assistant" className="hover:text-text-primary flex items-center gap-1 group">
             Trip inspiration
             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" className="group-hover:text-blue-600 transition-colors" aria-hidden="true">
               <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

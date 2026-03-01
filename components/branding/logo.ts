@@ -1,1 +1,4 @@
-export const GETYOURGUIDE_LOGO_DATA_URI = "/logo.png";
+export const SMARTTRIPAI_LOGO_DATA_URI = "/logo.png";
+
+/** @deprecated use SMARTTRIPAI_LOGO_DATA_URI */
+export const GETYOURGUIDE_LOGO_DATA_URI = SMARTTRIPAI_LOGO_DATA_URI;

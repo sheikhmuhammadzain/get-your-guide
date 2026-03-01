@@ -6,7 +6,10 @@ import { signOut } from "next-auth/react";
 import {
   Bell,
   ChevronRight,
+  Eye,
+  EyeOff,
   HelpCircle,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Search,
@@ -17,10 +20,10 @@ import {
   Users,
 } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { GETYOURGUIDE_LOGO_DATA_URI } from "@/components/branding/logo";
+import { SMARTTRIPAI_LOGO_DATA_URI as GETYOURGUIDE_LOGO_DATA_URI } from "@/components/branding/logo";
 
 type AdminTab = "users" | "orders" | "itineraries" | "feedback";
-type AdminNav = "overview" | AdminTab;
+type AdminNav = "overview" | AdminTab | "settings";
 type Option = { value: string; label: string };
 
 interface AdminPanelClientProps {
@@ -86,6 +89,12 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [users, setUsers] = useState(props.users.data);
+
+  // Password change form state
+  const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [pwShow, setPwShow] = useState({ current: false, next: false, confirm: false });
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwMessage, setPwMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [orders, setOrders] = useState(props.orders.data);
   const [itineraries, setItineraries] = useState(props.itineraries.data);
   const [feedback, setFeedback] = useState(props.feedback.data);
@@ -232,6 +241,13 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
         secondLabel: "Avg rating",
         firstValues: feedbackCountSeries,
         secondValues: feedbackAvgRatingSeries,
+      },
+      settings: {
+        title: "",
+        firstLabel: "",
+        secondLabel: "",
+        firstValues: [],
+        secondValues: [],
       },
     };
 
@@ -414,6 +430,33 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
     }
   }
 
+  async function handlePasswordChange(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      setPwMessage({ type: "error", text: "New password and confirmation do not match" });
+      return;
+    }
+    setPwBusy(true);
+    setPwMessage(null);
+    try {
+      const response = await fetch("/api/v1/admin/password", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(pwForm),
+      });
+      const data = await response.json() as { title?: string };
+      if (!response.ok) {
+        throw new Error(data.title ?? "Password change failed");
+      }
+      setPwMessage({ type: "success", text: "Password updated successfully" });
+      setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      setPwMessage({ type: "error", text: error instanceof Error ? error.message : "Password change failed" });
+    } finally {
+      setPwBusy(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen overflow-x-hidden">
       <aside className="hidden w-[260px] border-r border-border-default bg-surface-muted p-4 lg:flex lg:flex-col">
@@ -421,7 +464,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
           <div className="overflow-hidden rounded-lg">
             <Image
               src={GETYOURGUIDE_LOGO_DATA_URI}
-              alt="GetYourGuide"
+              alt="Smart Trip AI"
               width={36}
               height={40}
               className="h-8 w-8 object-cover object-left"
@@ -430,7 +473,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
           </div>
         </div>
 
-        <div className="mb-4 rounded-xl border border-border-default bg-white px-3 py-2">
+        <div className="mb-4 rounded-xl border border-border-default bg-surface-base px-3 py-2">
           <div className="flex items-center gap-2 text-sm text-text-muted">
             <Search className="h-4 w-4" />
             <span>Search workspace...</span>
@@ -508,9 +551,18 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
               setSearch("");
             }}
           />
+          <SidebarItem
+            icon={<KeyRound className="h-4 w-4" />}
+            label="Settings"
+            active={activeNav === "settings"}
+            onClick={() => {
+              setActiveNav("settings");
+              setSearch("");
+            }}
+          />
         </div>
 
-        <div className="mt-auto rounded-xl border border-border-default bg-white p-3">
+        <div className="mt-auto rounded-xl border border-border-default bg-surface-base p-3">
           <p className="text-xs text-text-subtle">Signed in as</p>
           <p className="text-sm font-semibold text-text-heading">admin@gmail.com</p>
           <button
@@ -525,12 +577,12 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
 
       <section className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">
         <div className="mx-auto w-full max-w-[1200px]">
-          <div className="mb-3 rounded-2xl border border-border-default bg-white p-2.5 shadow-sm lg:hidden">
+          <div className="mb-3 rounded-2xl border border-border-default bg-surface-base p-2.5 shadow-sm lg:hidden">
             <div className="flex items-center justify-between gap-2 px-1 pb-2">
               <div className="flex items-center gap-2">
                 <Image
                   src={GETYOURGUIDE_LOGO_DATA_URI}
-                  alt="GetYourGuide"
+                  alt="Smart Trip AI"
                   width={28}
                   height={28}
                   className="h-7 w-7 rounded-md object-cover object-left"
@@ -592,10 +644,18 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                   setSearch("");
                 }}
               />
+              <SidebarItemCompact
+                label="Settings"
+                active={activeNav === "settings"}
+                onClick={() => {
+                  setActiveNav("settings");
+                  setSearch("");
+                }}
+              />
             </div>
           </div>
 
-          <header className="mb-4 overflow-hidden rounded-2xl border border-border-default bg-white px-3 py-3 shadow-sm sm:px-4">
+          <header className="mb-4 overflow-hidden rounded-2xl border border-border-default bg-surface-base px-3 py-3 shadow-sm sm:px-4">
             <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
               <div className="min-w-0 flex flex-wrap items-center gap-1.5 text-xs text-text-muted sm:gap-2 sm:text-sm">
                 <Link href="/" className="font-medium text-text-body">Workspace</Link>
@@ -607,7 +667,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
               <div className="flex w-full items-center gap-2 sm:w-auto">
                 <Link
                   href="/admin"
-                  className="rounded-lg border border-border-default bg-white px-3 py-2 text-xs font-semibold text-text-body"
+                  className="rounded-lg border border-border-default bg-surface-base px-3 py-2 text-xs font-semibold text-text-body"
                 >
                   Manage
                 </Link>
@@ -616,7 +676,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                     void navigator.clipboard.writeText(typeof window !== "undefined" ? window.location.href : "");
                     setMessage("Admin link copied");
                   }}
-                  className="rounded-lg border border-border-default bg-white px-3 py-2 text-xs font-semibold text-text-body"
+                  className="rounded-lg border border-border-default bg-surface-base px-3 py-2 text-xs font-semibold text-text-body"
                 >
                   Share
                 </button>
@@ -624,7 +684,9 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
             </div>
           </header>
 
-          <section className="mb-4 rounded-2xl border border-border-default bg-white p-3.5 shadow-sm sm:p-4 md:p-5">
+          {activeNav !== "settings" ? (
+          <>
+          <section className="mb-4 rounded-2xl border border-border-default bg-surface-base p-3.5 shadow-sm sm:p-4 md:p-5">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">Admin Command Center</p>
@@ -668,7 +730,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border-default bg-white p-3.5 shadow-sm sm:p-4 md:p-5">
+          <section className="rounded-2xl border border-border-default bg-surface-base p-3.5 shadow-sm sm:p-4 md:p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="no-scrollbar max-w-full flex w-full gap-2 overflow-x-auto pb-1 md:w-auto md:flex-wrap md:overflow-visible md:pb-0">
                 {(["users", "orders", "itineraries", "feedback"] as const).map((tab) => (
@@ -681,7 +743,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                       setSortValue("default");
                     }}
                     className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold capitalize ${
-                      activeTab === tab ? "bg-text-primary text-white" : "border border-border-strong bg-white text-text-body"
+                      activeTab === tab ? "bg-text-primary text-white" : "border border-border-strong bg-surface-base text-text-body"
                     }`}
                   >
                     {tab}
@@ -697,13 +759,13 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                       setFilterMenuOpen((prev) => !prev);
                       setSortMenuOpen(false);
                     }}
-                    className="inline-flex h-10 items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-xs font-semibold text-text-body"
+                    className="inline-flex h-10 items-center gap-1 rounded-lg border border-border-strong bg-surface-base px-3 py-2 text-xs font-semibold text-text-body"
                   >
                     <SlidersHorizontal className="h-4 w-4" />
                     Filter
                   </button>
                   {filterMenuOpen ? (
-                    <div className="absolute left-0 z-20 mt-1 w-44 rounded-lg border border-border-strong bg-white p-1 shadow-lg md:left-auto md:right-0">
+                    <div className="absolute left-0 z-20 mt-1 w-44 rounded-lg border border-border-strong bg-surface-base p-1 shadow-lg md:left-auto md:right-0">
                       {filterOptions.map((option) => (
                         <button
                           key={option.value}
@@ -732,13 +794,13 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                       setSortMenuOpen((prev) => !prev);
                       setFilterMenuOpen(false);
                     }}
-                    className="inline-flex h-10 items-center gap-1 rounded-lg border border-border-strong bg-white px-3 py-2 text-xs font-semibold text-text-body"
+                    className="inline-flex h-10 items-center gap-1 rounded-lg border border-border-strong bg-surface-base px-3 py-2 text-xs font-semibold text-text-body"
                   >
                     <Settings2 className="h-4 w-4" />
                     Sort
                   </button>
                   {sortMenuOpen ? (
-                    <div className="absolute left-0 z-20 mt-1 w-44 rounded-lg border border-border-strong bg-white p-1 shadow-lg md:left-auto md:right-0">
+                    <div className="absolute left-0 z-20 mt-1 w-44 rounded-lg border border-border-strong bg-surface-base p-1 shadow-lg md:left-auto md:right-0">
                       {sortOptions.map((option) => (
                         <button
                           key={option.value}
@@ -1188,8 +1250,121 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
               </div>
             </div>
           </section>
+          </>) : (
+          <section className="rounded-2xl border border-border-default bg-surface-base p-3.5 shadow-sm sm:p-4 md:p-5">
+            <div className="mb-6">
+              <p className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">Settings</p>
+              <p className="mt-1 text-sm text-text-muted">Manage your admin account security.</p>
+            </div>
+
+            <div className="max-w-md">
+              <div className="rounded-xl border border-border-default p-5">
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-default bg-surface-muted">
+                    <KeyRound className="h-4 w-4 text-text-muted" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-text-heading">Change Password</p>
+                    <p className="text-xs text-text-muted">Update your admin account password</p>
+                  </div>
+                </div>
+
+                {pwMessage ? (
+                  <div
+                    className={`mb-4 rounded-lg border px-3 py-2 text-sm ${
+                      pwMessage.type === "success"
+                        ? "border-border-success bg-surface-success-soft text-text-success"
+                        : "border-border-danger bg-surface-danger-soft text-text-danger"
+                    }`}
+                  >
+                    {pwMessage.text}
+                  </div>
+                ) : null}
+
+                <form onSubmit={(e) => void handlePasswordChange(e)} className="space-y-4">
+                  <PasswordField
+                    label="Current password"
+                    value={pwForm.currentPassword}
+                    show={pwShow.current}
+                    onToggle={() => setPwShow((s) => ({ ...s, current: !s.current }))}
+                    onChange={(v) => setPwForm((f) => ({ ...f, currentPassword: v }))}
+                    autoComplete="current-password"
+                  />
+                  <PasswordField
+                    label="New password"
+                    value={pwForm.newPassword}
+                    show={pwShow.next}
+                    onToggle={() => setPwShow((s) => ({ ...s, next: !s.next }))}
+                    onChange={(v) => setPwForm((f) => ({ ...f, newPassword: v }))}
+                    autoComplete="new-password"
+                    hint="Min 8 chars with uppercase, lowercase, number and symbol"
+                  />
+                  <PasswordField
+                    label="Confirm new password"
+                    value={pwForm.confirmPassword}
+                    show={pwShow.confirm}
+                    onToggle={() => setPwShow((s) => ({ ...s, confirm: !s.confirm }))}
+                    onChange={(v) => setPwForm((f) => ({ ...f, confirmPassword: v }))}
+                    autoComplete="new-password"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={pwBusy || !pwForm.currentPassword || !pwForm.newPassword || !pwForm.confirmPassword}
+                    className="mt-2 w-full rounded-lg bg-text-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    {pwBusy ? "Updating..." : "Update password"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </section>
+          )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function PasswordField({
+  label,
+  value,
+  show,
+  onToggle,
+  onChange,
+  autoComplete,
+  hint,
+}: {
+  label: string;
+  value: string;
+  show: boolean;
+  onToggle: () => void;
+  onChange: (v: string) => void;
+  autoComplete?: string;
+  hint?: string;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-medium text-text-body">{label}</label>
+      <div className="relative">
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          required
+          className="h-10 w-full rounded-lg border border-border-strong pr-10 pl-3 text-sm outline-none focus:border-brand"
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-subtle hover:text-text-body"
+          tabIndex={-1}
+        >
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+      {hint ? <p className="mt-1 text-[11px] text-text-muted">{hint}</p> : null}
     </div>
   );
 }
@@ -1212,7 +1387,7 @@ function SidebarItem({
       type="button"
       onClick={onClick}
       className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left ${
-        active ? "bg-white font-semibold text-text-primary shadow-sm" : "text-text-muted hover:bg-white"
+        active ? "bg-surface-base font-semibold text-text-primary shadow-sm" : "text-text-muted hover:bg-surface-base"
       }`}
     >
       {icon}
@@ -1232,7 +1407,7 @@ function SidebarItemCompact({ label, active, onClick }: { label: string; active?
       className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${
         active
           ? "border-text-primary bg-text-primary text-white"
-          : "border-border-strong bg-white text-text-body"
+          : "border-border-strong bg-surface-base text-text-body"
       }`}
     >
       {label}
@@ -1248,7 +1423,7 @@ function KpiCard({ label, value, tone }: { label: string; value: string; tone: "
       ? "border-border-success bg-surface-success-soft"
       : tone === "amber"
       ? "border-border-warning bg-surface-warning-soft"
-      : "border-border-strong bg-slate-50";
+      : "border-border-strong bg-surface-muted";
 
   return (
     <div className={`min-w-[120px] rounded-xl border px-3 py-2 ${toneClass}`}>
@@ -1271,13 +1446,13 @@ function MobileList({
   }>;
 }) {
   if (rows.length === 0) {
-    return <div className="rounded-xl border border-border-soft bg-slate-50 p-3 text-sm text-text-muted">No results found.</div>;
+    return <div className="rounded-xl border border-border-soft bg-surface-muted p-3 text-sm text-text-muted">No results found.</div>;
   }
 
   return (
     <div className="space-y-2.5">
       {rows.map((row) => (
-        <article key={row.id} className="rounded-xl border border-border-soft bg-white p-3">
+        <article key={row.id} className="rounded-xl border border-border-soft bg-surface-base p-3">
           <p className="truncate text-sm font-semibold text-text-primary">{row.title}</p>
           <p className="mt-1 truncate text-xs text-text-body">{row.subtitle}</p>
           <p className="mt-1 text-xs text-text-muted">{row.meta}</p>
@@ -1293,7 +1468,7 @@ function ResourceTable({ headers, rows }: { headers: string[]; rows: Array<Array
   return (
     <table className="min-w-full text-sm">
       <thead>
-        <tr className="border-b border-border-soft bg-slate-50 text-left text-text-muted">
+        <tr className="border-b border-border-soft bg-surface-muted text-left text-text-muted">
           {headers.map((header) => (
             <th key={header} className="px-3 py-2 font-medium">{header}</th>
           ))}
@@ -1317,7 +1492,7 @@ function ActionButton({ label, disabled, onClick }: { label: string; disabled?: 
     <button
       disabled={disabled}
       onClick={onClick}
-      className="rounded-md border border-border-strong bg-white px-2.5 py-1 text-xs font-semibold text-text-body disabled:opacity-50"
+      className="rounded-md border border-border-strong bg-surface-base px-2.5 py-1 text-xs font-semibold text-text-body disabled:opacity-50"
     >
       {label}
     </button>

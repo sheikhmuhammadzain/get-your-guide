@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { Save, Trash2, ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { GeneratedItinerary } from "@/types/travel";
 
@@ -19,6 +20,12 @@ interface ItineraryDetailClientProps {
   generatedPlan: GeneratedItinerary | null;
 }
 
+const STATUS_LABELS: Record<ItineraryStatus, string> = {
+  draft: "Draft",
+  saved: "Saved",
+  archived: "Archived",
+};
+
 export default function ItineraryDetailClient({ itinerary, generatedPlan }: ItineraryDetailClientProps) {
   const [notes, setNotes] = useState(itinerary.notes ?? "");
   const [status, setStatus] = useState<ItineraryStatus>(itinerary.status);
@@ -36,10 +43,7 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
       const response = await fetch(`/api/v1/itineraries/${itinerary.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          notes,
-          status,
-        }),
+        body: JSON.stringify({ notes, status }),
       });
 
       if (!response.ok) {
@@ -47,7 +51,7 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
         throw new Error(body.detail ?? "Failed to update itinerary");
       }
 
-      setFeedback("Itinerary updated.");
+      setFeedback("✓ Itinerary updated successfully.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Failed to update itinerary");
     } finally {
@@ -57,9 +61,7 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
 
   async function deleteItinerary() {
     const approved = window.confirm("Delete this itinerary permanently?");
-    if (!approved) {
-      return;
-    }
+    if (!approved) return;
 
     setIsDeleting(true);
     setFeedback(null);
@@ -82,28 +84,38 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
   }
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+    <section className="space-y-5">
+      {/* Meta bar */}
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-border-soft bg-surface-subtle px-5 py-3 text-sm text-text-body">
         <p>
-          Status: <span className="font-semibold">{status}</span>
+          Status:{" "}
+          <span className={`font-semibold ${status === "saved" ? "text-green-600" : status === "archived" ? "text-text-muted" : "text-amber-500"}`}>
+            {STATUS_LABELS[status]}
+          </span>
         </p>
+        <div className="h-4 w-px bg-border-default" />
         <p>
           Version: <span className="font-semibold">{itinerary.version}</span>
         </p>
+        <div className="h-4 w-px bg-border-default" />
         <p>
           Days: <span className="font-semibold">{dayCount}</span>
         </p>
       </div>
 
-      <div className="rounded-xl border border-gray-200 p-5">
-        <h2 className="mb-4 text-lg font-semibold">Notes and Status</h2>
+      {/* Edit form */}
+      <div className="rounded-2xl border border-border-soft bg-surface-base p-5">
+        <h2 className="mb-4 text-lg font-bold text-text-primary">Notes & Status</h2>
+
         <div className="space-y-4">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-gray-700">Status</span>
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-text-subtle">
+              Status
+            </span>
             <select
               value={status}
               onChange={(event) => setStatus(event.target.value as ItineraryStatus)}
-              className="h-10 w-full rounded-lg border border-gray-300 px-3 outline-none focus:border-blue-600"
+              className="h-10 w-full rounded-lg border border-border-default bg-surface-base px-3 text-sm text-text-body outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors"
             >
               <option value="draft">Draft</option>
               <option value="saved">Saved</option>
@@ -112,40 +124,54 @@ export default function ItineraryDetailClient({ itinerary, generatedPlan }: Itin
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-gray-700">Notes</span>
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-text-subtle">
+              Notes
+            </span>
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              rows={5}
-              className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600"
-              placeholder="Add your travel notes..."
+              rows={4}
+              className="w-full rounded-lg border border-border-default bg-surface-base p-3 text-sm text-text-body outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors"
+              placeholder="Add your travel notes, reminders, or packing list..."
             />
           </label>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        {/* Actions */}
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <button
             disabled={isSaving}
             onClick={() => void updateItinerary()}
-            className="rounded-full bg-brand px-5 py-2 font-semibold text-white disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
           >
+            <Save className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save Changes"}
           </button>
+
           <button
             disabled={isDeleting}
             onClick={() => void deleteItinerary()}
-            className="rounded-full border border-red-300 px-5 py-2 font-semibold text-red-700 disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-lg border border-border-danger px-5 py-2.5 text-sm font-semibold text-text-danger transition-colors hover:bg-surface-danger-soft disabled:opacity-60"
           >
-            {isDeleting ? "Deleting..." : "Delete Itinerary"}
+            <Trash2 className="h-4 w-4" />
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
-          <Link href="/dashboard" className="rounded-full border border-gray-300 px-5 py-2 font-semibold text-gray-700">
-            Back to Dashboard
+
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-lg border border-border-default px-5 py-2.5 text-sm font-medium text-text-body transition-colors hover:bg-surface-subtle"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Dashboard
           </Link>
         </div>
 
-        {feedback ? <p className="mt-4 text-sm text-gray-700">{feedback}</p> : null}
+        {feedback && (
+          <p className={`mt-4 text-sm ${feedback.startsWith("✓") ? "text-green-600" : "text-text-danger"}`}>
+            {feedback}
+          </p>
+        )}
       </div>
     </section>
   );
 }
-

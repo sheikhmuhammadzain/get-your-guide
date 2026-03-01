@@ -53,30 +53,29 @@ export default function LanguageCurrencyDialog({
         aria-modal="true"
         aria-label="Language and currency preferences"
         onClick={(event) => event.stopPropagation()}
-        className="mx-auto flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl"
+        className="mx-auto flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-border-soft bg-background shadow-2xl"
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border-default px-6 py-4">
           <h2 className="text-lg font-semibold text-text-heading">Preferences</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-gray-600 hover:bg-gray-100"
+            className="rounded-full p-2 text-text-muted hover:bg-surface-subtle"
             aria-label="Close preferences dialog"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="border-b border-gray-200 px-6 pt-2">
+        <div className="border-b border-border-default px-6 pt-2">
           <div className="flex items-end gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("language")}
-              className={`inline-flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold ${
-                activeTab === "language"
+              className={`inline-flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold ${activeTab === "language"
                   ? "border-brand text-brand"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
-              }`}
+                  : "border-transparent text-text-muted hover:text-text-primary"
+                }`}
             >
               <Globe className="h-4 w-4" />
               Language
@@ -84,11 +83,10 @@ export default function LanguageCurrencyDialog({
             <button
               type="button"
               onClick={() => setActiveTab("currency")}
-              className={`inline-flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold ${
-                activeTab === "currency"
+              className={`inline-flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold ${activeTab === "currency"
                   ? "border-brand text-brand"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
-              }`}
+                  : "border-transparent text-text-muted hover:text-text-primary"
+                }`}
             >
               <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px]">
                 $
@@ -108,13 +106,12 @@ export default function LanguageCurrencyDialog({
                     key={item.code}
                     type="button"
                     onClick={() => onChange({ ...preferences, language: item.code as AppLanguage })}
-                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left ${
-                      selected ? "border-brand bg-blue-50 text-brand" : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left ${selected ? "border-brand bg-surface-brand-soft text-brand" : "border-border-default hover:border-border-strong"
+                      }`}
                   >
                     <span>
                       <span className="block text-sm font-semibold">{item.label}</span>
-                      <span className="block text-xs text-gray-500">{item.nativeLabel}</span>
+                      <span className="block text-xs text-text-muted">{item.nativeLabel}</span>
                     </span>
                     {selected ? <Check className="h-4 w-4" /> : null}
                   </button>
@@ -139,7 +136,7 @@ export default function LanguageCurrencyDialog({
                 </div>
               </section>
 
-              <section className="border-t border-gray-200 pt-4">
+              <section className="border-t border-border-default pt-4">
                 <p className="mb-3 text-sm font-semibold text-text-heading">All currencies</p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {CURRENCY_OPTIONS.map((item) => (
@@ -179,13 +176,12 @@ function CurrencyButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left ${
-        selected ? "border-brand bg-blue-50 text-brand" : "border-gray-200 hover:border-gray-300"
-      }`}
+      className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left ${selected ? "border-brand bg-surface-brand-soft text-brand" : "border-border-default hover:border-border-strong"
+        }`}
     >
       <span>
         <span className="block text-sm font-semibold">{label}</span>
-        <span className="block text-xs text-gray-500">
+        <span className="block text-xs text-text-muted">
           {code} {symbol}
         </span>
       </span>

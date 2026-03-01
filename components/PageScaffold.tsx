@@ -10,11 +10,11 @@ interface PageScaffoldProps {
 
 export default function PageScaffold({ title, description, children }: PageScaffoldProps) {
   return (
-    <div className="min-h-screen bg-white text-text-heading">
+    <div className="min-h-screen bg-background text-text-heading">
       <Header />
       <main className="mx-auto max-w-[1200px] px-4 py-10 md:px-6">
         <h1 className="mb-2 text-3xl font-bold">{title}</h1>
-        {description ? <p className="mb-8 text-gray-600">{description}</p> : null}
+        {description ? <p className="mb-8 text-text-body">{description}</p> : null}
         {children}
       </main>
       <Footer />

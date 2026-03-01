@@ -10,7 +10,7 @@ export default function HelpPage() {
       <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5 text-sm text-gray-700">
         <p>
           For itinerary issues, account access, or API-related travel data problems, contact
-          support@getyourguide.local and include your itinerary ID.
+          support@smarttripai.com and include your itinerary ID.
         </p>
       </div>
       <FeedbackForm />

@@ -12,8 +12,8 @@ export default async function ProfilePage() {
       description="Manage account access and review your travel planning activity."
     >
       {!user?.id ? (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-          <p className="text-gray-700">You are not signed in.</p>
+        <div className="rounded-xl border border-border-default bg-surface-subtle p-6">
+          <p className="text-text-body">You are not signed in.</p>
           <Link
             href="/auth/signin"
             className="mt-4 inline-flex rounded-full bg-brand px-5 py-2 font-semibold text-white"
@@ -22,22 +22,22 @@ export default async function ProfilePage() {
           </Link>
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <div className="rounded-xl border border-border-default bg-surface-base p-6">
           <dl className="grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-gray-500">Name</dt>
+              <dt className="text-sm text-text-muted">Name</dt>
               <dd className="font-semibold">{user.name ?? "Not set"}</dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Email</dt>
+              <dt className="text-sm text-text-muted">Email</dt>
               <dd className="font-semibold">{user.email ?? "Not set"}</dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">User ID</dt>
+              <dt className="text-sm text-text-muted">User ID</dt>
               <dd className="font-mono text-xs">{user.id}</dd>
             </div>
           </dl>
-          <Link href="/dashboard" className="mt-5 inline-flex rounded-full border border-gray-300 px-5 py-2 font-semibold text-gray-700">
+          <Link href="/dashboard" className="mt-5 inline-flex rounded-full border border-border-default px-5 py-2 font-semibold text-text-body">
             View Dashboard
           </Link>
         </div>

@@ -19,7 +19,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-5xl px-4 py-10 md:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <SettingsSidebar firstName={firstName} />
