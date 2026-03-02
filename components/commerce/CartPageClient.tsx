@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
@@ -6,34 +6,57 @@ import Link from "next/link";
 import {
   ShoppingBag,
   Trash2,
-  MapPin,
+  CheckCircle2,
   Clock,
-  Shield,
-  ArrowRight,
-  Minus,
-  Plus,
+  Users,
+  Bookmark,
+  Lock,
+  MessageCircle,
+  Star,
   ChevronRight,
-  Package,
+  Edit2,
+  ArrowRight,
+  Check,
 } from "lucide-react";
 import { getProductById } from "@/lib/data";
 import { getLanguageLocale, useAppPreferences } from "@/lib/preferences-client";
 import { useCartState } from "@/components/commerce/cart-client";
 
-export default function CartPageClient() {
-  const { items, updateQuantity, removeItem } = useCartState();
-  const { preferences } = useAppPreferences();
-  const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
+function useCountdown(initialSeconds: number) {
+  const [seconds, setSeconds] = useState(initialSeconds);
+  useEffect(() => {
+    if (seconds <= 0) return;
+    const id = setInterval(() => setSeconds((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(id);
+  }, [seconds]);
+  const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const s = String(seconds % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
 
-  const convertedTotal = useMemo(
-    () =>
-      items.reduce((sum, item) => {
-        const product = getProductById(item.productId);
-        if (!product) return sum;
-        const rate = conversionRates[product.currency] ?? 1;
-        return sum + product.price * item.quantity * rate;
-      }, 0),
-    [conversionRates, items],
+function Stars({ rating }: { rating: number }) {
+  const full = Math.round(rating);
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <Star
+          key={i}
+          className={`h-3 w-3 ${i < full
+            ? "fill-amber-400 text-amber-400"
+            : "fill-surface-subtle text-border-default"
+            }`}
+        />
+      ))}
+      <span className="ml-1 text-xs text-text-muted">{rating.toFixed(1)}</span>
+    </span>
   );
+}
+
+export default function CartPageClient() {
+  const { items, removeItem } = useCartState();
+  const { preferences } = useAppPreferences();
+  const countdown = useCountdown(30 * 60);
+  const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -43,30 +66,24 @@ export default function CartPageClient() {
         new Set(
           items
             .map((item) => getProductById(item.productId)?.currency)
-            .filter((value): value is string => Boolean(value)),
+            .filter((v): v is string => Boolean(v)),
         ),
       );
 
       const nextRates: Record<string, number> = {};
-
       await Promise.all(
         bases.map(async (base) => {
           if (base === preferences.currency) {
             nextRates[base] = 1;
             return;
           }
-
           try {
-            const response = await fetch(
+            const res = await fetch(
               `/api/v1/realtime/currency?base=${encodeURIComponent(base)}&target=${encodeURIComponent(preferences.currency)}`,
               { cache: "no-store" },
             );
-            if (!response.ok) {
-              nextRates[base] = 1;
-              return;
-            }
-
-            const body = (await response.json()) as { rate?: number };
+            if (!res.ok) { nextRates[base] = 1; return; }
+            const body = (await res.json()) as { rate?: number };
             nextRates[base] =
               typeof body.rate === "number" && Number.isFinite(body.rate)
                 ? body.rate
@@ -77,16 +94,22 @@ export default function CartPageClient() {
         }),
       );
 
-      if (!cancelled) {
-        setConversionRates(nextRates);
-      }
+      if (!cancelled) setConversionRates(nextRates);
     }
 
     void loadRates();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [items, preferences.currency]);
+
+  const convertedTotal = useMemo(
+    () =>
+      items.reduce((sum, item) => {
+        const p = getProductById(item.productId);
+        if (!p) return sum;
+        return sum + p.price * item.quantity * (conversionRates[p.currency] ?? 1);
+      }, 0),
+    [conversionRates, items],
+  );
 
   /* ─── Empty State ─────────────────────────────── */
   if (items.length === 0) {
@@ -111,231 +134,251 @@ export default function CartPageClient() {
     );
   }
 
-  /* ─── Cart with Items ─────────────────────────── */
+  /* ─── Helpers ──────────────────────────────────── */
   const locale = getLanguageLocale(preferences.language);
-  const formattedTotal = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: preferences.currency,
-    maximumFractionDigits: 0,
-  }).format(Math.round(convertedTotal));
+  const fmt = (amount: number) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: preferences.currency,
+      maximumFractionDigits: 0,
+    }).format(Math.round(amount));
 
+  const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+
+  const todayLabel = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  /* ─── Cart ─────────────────────────────────────── */
   return (
     <>
       {/* Breadcrumb */}
-      <nav className="mb-6">
+      <nav className="mb-5">
         <ol className="flex items-center gap-1.5 text-xs text-text-muted">
           <li>
-            <Link href="/" className="transition-colors hover:text-brand">
-              Home
-            </Link>
+            <Link href="/" className="transition-colors hover:text-brand">Home</Link>
           </li>
           <ChevronRight className="h-3 w-3" />
           <li className="font-medium text-text-body">Cart</li>
         </ol>
       </nav>
 
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Shopping Cart</h1>
-          <p className="mt-1 text-sm text-text-muted">
-            {items.length} {items.length === 1 ? "experience" : "experiences"} in
-            your cart
-          </p>
-        </div>
+      {/* Title */}
+      <h1 className="mb-4 text-2xl font-bold text-text-primary">Shopping cart</h1>
+
+      {/* Countdown banner */}
+      <div
+        className="mb-6 flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
+        style={{
+          background: 'var(--timer-bg)',
+          border: '2px solid var(--timer-border)',
+          color: 'var(--timer-text)',
+        }}
+      >
+        <Clock className="h-4 w-4 shrink-0" style={{ color: 'var(--timer-icon)' }} />
+        <span>
+          We&apos;ll hold your spot for{" "}
+          <strong className="font-extrabold" style={{ color: 'var(--timer-bold)' }}>{countdown}</strong> minutes.
+        </span>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        {/* ─── Items Column ───────────────────────── */}
-        <div className="space-y-3">
-          {items.map((item) => {
-            const product = getProductById(item.productId);
-            if (!product) return null;
+        {/* ─── Items column ───────────────────────── */}
+        <div>
+          {/* Date group header */}
+          <div className="mb-4 border-b border-border-subtle pb-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              {todayLabel}
+            </p>
+          </div>
 
-            const convertedUnitPrice = Math.round(
-              product.price * (conversionRates[product.currency] ?? 1),
-            );
-            const formattedUnitPrice = new Intl.NumberFormat(locale, {
-              style: "currency",
-              currency: preferences.currency,
-              maximumFractionDigits: 0,
-            }).format(convertedUnitPrice);
-
-            const lineTotal = new Intl.NumberFormat(locale, {
-              style: "currency",
-              currency: preferences.currency,
-              maximumFractionDigits: 0,
-            }).format(convertedUnitPrice * item.quantity);
-
-            return (
-              <article
-                key={item.productId}
-                className="flex gap-4 rounded-2xl border border-border-soft bg-surface-base p-4 transition-colors sm:p-5"
-              >
-                {/* Thumbnail */}
-                <Link
-                  href={`/products/${product.id}`}
-                  className="relative shrink-0 overflow-hidden rounded-xl"
-                >
-                  <Image
-                    src={product.image}
-                    alt={product.title}
-                    width={160}
-                    height={120}
-                    className="h-24 w-32 object-cover sm:h-28 sm:w-36"
-                  />
-                </Link>
-
-                {/* Details */}
-                <div className="flex flex-1 flex-col justify-between min-w-0">
-                  <div>
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="text-sm font-semibold leading-snug text-text-primary transition-colors hover:text-brand line-clamp-2"
-                    >
-                      {product.title}
-                    </Link>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {product.location}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {product.duration}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Bottom row: quantity + price */}
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-1">
-                      {/* Quantity stepper */}
-                      <div className="flex items-center rounded-lg border border-border-default overflow-hidden">
-                        <button
-                          onClick={() =>
-                            updateQuantity(
-                              item.productId,
-                              Math.max(1, item.quantity - 1),
-                            )
-                          }
-                          className="px-2.5 py-1.5 text-xs text-text-body transition-colors hover:bg-surface-subtle"
-                          aria-label="Decrease"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="min-w-[2rem] border-x border-border-default py-1.5 text-center text-xs font-semibold text-text-primary">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateQuantity(
-                              item.productId,
-                              Math.min(10, item.quantity + 1),
-                            )
-                          }
-                          className="px-2.5 py-1.5 text-xs text-text-body transition-colors hover:bg-surface-subtle"
-                          aria-label="Increase"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      {/* Remove */}
-                      <button
-                        onClick={() => removeItem(item.productId)}
-                        className="ml-1 flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs text-text-muted transition-colors hover:bg-surface-danger-soft hover:text-text-danger"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                        <span className="hidden sm:inline">Remove</span>
-                      </button>
-                    </div>
-
-                    {/* Price */}
-                    <div className="text-right">
-                      <p className="text-xs text-text-muted">
-                        {formattedUnitPrice} × {item.quantity}
-                      </p>
-                      <p className="text-sm font-bold text-text-primary">{lineTotal}</p>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-
-        {/* ─── Order Summary ──────────────────────── */}
-        <aside className="h-fit space-y-5 rounded-2xl border border-border-soft bg-surface-base p-6 lg:sticky lg:top-24">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-text-primary">
-            Order Summary
-          </h2>
-
-          {/* Line items summary */}
-          <div className="space-y-2.5">
+          <div className="space-y-4">
             {items.map((item) => {
               const product = getProductById(item.productId);
               if (!product) return null;
-              const unitPrice = Math.round(
+
+              const unitConverted = Math.round(
                 product.price * (conversionRates[product.currency] ?? 1),
               );
-              const total = new Intl.NumberFormat(locale, {
-                style: "currency",
-                currency: preferences.currency,
-                maximumFractionDigits: 0,
-              }).format(unitPrice * item.quantity);
+              const lineFormatted = fmt(unitConverted * item.quantity);
 
               return (
-                <div
+                <article
                   key={item.productId}
-                  className="flex items-center justify-between text-xs"
+                  className="flex gap-4 rounded-2xl border border-border-soft bg-surface-base p-4"
                 >
-                  <span className="max-w-[180px] truncate text-text-body">
-                    {product.title}
-                  </span>
-                  <span className="font-medium text-text-primary">{total}</span>
-                </div>
+                  {/* Thumbnail */}
+                  <Link
+                    href={`/products/${product.id}`}
+                    className="relative shrink-0 overflow-hidden rounded-xl"
+                  >
+                    <Image
+                      src={product.image}
+                      alt={product.title}
+                      width={120}
+                      height={90}
+                      className="h-22.5 w-30 object-cover"
+                    />
+                  </Link>
+
+                  {/* Details */}
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    {/* Title + price */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/products/${product.id}`}
+                          className="line-clamp-2 font-bold leading-snug text-text-primary transition-colors hover:text-brand"
+                        >
+                          {product.title}
+                        </Link>
+                        <div className="mt-1">
+                          <Stars rating={product.rating} />
+                        </div>
+                      </div>
+                      <p className="shrink-0 text-lg font-bold text-text-primary">
+                        {lineFormatted}
+                      </p>
+                    </div>
+
+                    {/* Option meta */}
+                    <div className="space-y-1 text-xs text-text-muted">
+                      <div className="flex items-center gap-1.5">
+                        <Bookmark className="h-3.5 w-3.5 shrink-0 text-text-subtle" />
+                        <span>Standard option</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5 shrink-0 text-text-subtle" />
+                        <span>
+                          Adult × {item.quantity} · {fmt(unitConverted)} per person
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                        <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                          Free cancellation
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/products/${product.id}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong px-3 py-1.5 text-xs font-semibold text-text-body transition-colors hover:bg-surface-subtle"
+                      >
+                        <Edit2 className="h-3 w-3" />
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => removeItem(item.productId)}
+                        className="flex items-center justify-center rounded-lg p-1.5 text-text-muted transition-colors hover:bg-surface-danger-soft hover:text-text-danger"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </article>
               );
             })}
           </div>
 
-          <div className="border-t border-border-subtle pt-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-muted">Subtotal</span>
+          {/* Total row */}
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border-subtle pt-4">
+            <div className="text-right">
+              <p className="text-sm font-bold text-text-primary">
+                Total {fmt(convertedTotal)}
+              </p>
+              <p className="text-xs text-text-muted">All taxes and fees included</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Sidebar ────────────────────────────── */}
+        <aside className="space-y-4 lg:sticky lg:top-24 h-fit">
+
+          {/* Subtotal card */}
+          <div className="rounded-2xl border border-border-soft bg-surface-base p-5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-semibold text-text-primary">
+                Subtotal ({totalQty} item{totalQty !== 1 ? "s" : ""})
+              </span>
               <span className="text-xl font-bold text-text-primary">
-                {formattedTotal}
+                {fmt(convertedTotal)}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-text-subtle">
-              Taxes and fees calculated at checkout
+            <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              All taxes and fees included
             </p>
+
+            <Link
+              href="/checkout"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-3 text-sm font-bold text-white transition-colors hover:bg-brand-hover"
+            >
+              Go to checkout
+            </Link>
+
+            {/* Payment badges */}
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {["VISA", "Mastercard", "PayPal", "G Pay"].map((name) => (
+                <span
+                  key={name}
+                  className="inline-flex h-6 items-center rounded border border-border-soft bg-white px-2 text-[10px] font-bold tracking-tight text-slate-600 dark:bg-surface-subtle dark:text-text-muted"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <Link
-            href="/checkout"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
-          >
-            Continue to Checkout
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-
-          <Link
-            href="/"
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-border-default px-5 py-2.5 text-sm font-medium text-text-body transition-colors hover:bg-surface-subtle"
-          >
-            Continue Shopping
-          </Link>
-
-          {/* Trust badges */}
-          <div className="space-y-2.5 border-t border-border-subtle pt-4">
-            <div className="flex items-center gap-2.5 text-xs text-text-muted">
-              <Shield className="h-3.5 w-3.5 shrink-0 text-brand" />
-              Free cancellation up to 24 hours before
+          {/* Free cancellation */}
+          <div className="rounded-2xl border border-border-soft bg-surface-base p-4">
+            <div className="flex items-start gap-2.5">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+              <div>
+                <p className="text-sm font-semibold text-text-primary">
+                  Free cancellation
+                </p>
+                <p className="mt-0.5 text-xs text-text-muted">
+                  Cancel up to 24 hours before the activity for a full refund
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2.5 text-xs text-text-muted">
-              <Package className="h-3.5 w-3.5 shrink-0 text-brand" />
-              Instant booking confirmation
+          </div>
+
+          {/* Why book with us */}
+          <div className="rounded-2xl border border-border-soft bg-surface-base p-4">
+            <p className="mb-3 text-sm font-bold text-text-primary">
+              Why book with us?
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2.5 text-xs text-text-muted">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                <span>
+                  <span className="font-semibold text-text-body">Secure payment</span>{" "}
+                  — your data is always protected
+                </span>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-text-muted">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                <span>
+                  <span className="font-semibold text-text-body">No hidden costs</span>{" "}
+                  — all taxes and fees included
+                </span>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-text-muted">
+                <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                <span>
+                  <span className="font-semibold text-text-body">
+                    24/7 customer support
+                  </span>{" "}
+                  worldwide
+                </span>
+              </div>
             </div>
           </div>
         </aside>

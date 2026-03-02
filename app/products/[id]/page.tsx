@@ -1,23 +1,21 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
   MapPin,
   Clock,
   Star,
-  Tag,
-  Users,
   CheckCircle2,
-  Sparkles,
   ChevronRight,
   Shield,
   Zap,
-  Heart,
+  Users,
+  Sparkles,
 } from "lucide-react";
-import AddToCartButton from "@/components/commerce/AddToCartButton";
 import CurrencyAmount from "@/components/CurrencyAmount";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import ProductAvailabilityPanel from "@/components/product/ProductAvailabilityPanel";
 import { getProductById, products } from "@/lib/data";
 
 export default async function ProductDetailPage({
@@ -32,14 +30,18 @@ export default async function ProductDetailPage({
     notFound();
   }
 
-  const related = products.filter((p) => p.id !== product.id).slice(0, 3);
+  const related = products
+    .filter((p) => p.id !== product.id && p.location === product.location)
+    .slice(0, 3)
+    .concat(products.filter((p) => p.id !== product.id && p.location !== product.location))
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-surface-muted text-text-heading">
       <Header />
 
       {/* Breadcrumb */}
-      <nav className="mx-auto max-w-[1200px] px-4 pt-6 md:px-6">
+      <nav className="mx-auto max-w-300 px-4 pt-6 md:px-6">
         <ol className="flex items-center gap-1.5 text-xs text-text-muted">
           <li>
             <Link href="/" className="transition-colors hover:text-brand">
@@ -48,228 +50,269 @@ export default async function ProductDetailPage({
           </li>
           <ChevronRight className="h-3 w-3" />
           <li>
-            <Link href="/" className="transition-colors hover:text-brand">
+            <Link href="/search" className="transition-colors hover:text-brand">
               Experiences
             </Link>
           </li>
           <ChevronRight className="h-3 w-3" />
-          <li className="text-text-body font-medium truncate max-w-[200px]">
+          <li className="truncate max-w-55 font-medium text-text-body">
             {product.title}
           </li>
         </ol>
       </nav>
 
-      <main className="mx-auto max-w-[1200px] px-4 pb-16 pt-4 md:px-6">
-        {/* ─── Hero Section ───────────────────────────── */}
-        <section className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-          {/* Image */}
-          <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-white">
-            {product.badge && (
-              <span className="absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">
-                <Sparkles className="h-3 w-3" />
-                {product.badge}
-              </span>
-            )}
-            <Image
-              src={product.image}
-              alt={product.title}
-              width={1200}
-              height={900}
-              className="aspect-[4/3] w-full object-cover"
-              priority
-            />
-          </div>
+      <main className="mx-auto max-w-300 px-4 pb-20 pt-4 md:px-6">
+        {/* Hero Image */}
+        <div className="relative mb-6 overflow-hidden rounded-2xl border border-border-soft bg-surface-subtle">
+          {product.badge && (
+            <span className="absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow">
+              <Sparkles className="h-3 w-3" />
+              {product.badge}
+            </span>
+          )}
+          <Image
+            src={product.image}
+            alt={product.title}
+            width={1200}
+            height={540}
+            className="w-full object-cover"
+            style={{ maxHeight: "460px" }}
+            priority
+            unoptimized
+          />
+        </div>
 
-          {/* Details Card */}
-          <div className="flex flex-col rounded-2xl border border-border-soft bg-white">
-            {/* Card Header */}
-            <div className="border-b border-border-subtle px-6 pt-6 pb-5">
-              <h1 className="text-xl font-bold leading-snug text-text-primary lg:text-2xl">
+        {/* Two-column layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
+          {/* Left column */}
+          <div className="min-w-0">
+            {/* Title block */}
+            <div className="mb-6">
+              <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-text-muted">
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5 text-brand" />
+                  {product.location}
+                </span>
+                <span className="text-border-default">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-brand" />
+                  {product.duration}
+                </span>
+                <span className="text-border-default">·</span>
+                <span className="inline-flex items-center gap-1 font-semibold text-amber-500">
+                  <Star className="h-3.5 w-3.5 fill-current" />
+                  {product.rating}
+                  <span className="font-normal text-text-muted">
+                    ({product.reviews.toLocaleString()} reviews)
+                  </span>
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold leading-snug text-text-primary lg:text-3xl">
                 {product.title}
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-text-muted">
                 {product.summary}
               </p>
-            </div>
-
-            {/* Metadata Chips */}
-            <div className="flex flex-wrap gap-2 border-b border-border-subtle px-6 py-4">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-subtle px-3 py-1 text-xs font-medium text-text-body">
-                <MapPin className="h-3 w-3 text-text-muted" />
-                {product.location}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-subtle px-3 py-1 text-xs font-medium text-text-body">
-                <Tag className="h-3 w-3 text-text-muted" />
-                {product.category}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-subtle px-3 py-1 text-xs font-medium text-text-body">
-                <Clock className="h-3 w-3 text-text-muted" />
-                {product.duration}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-brand-soft px-3 py-1 text-xs font-medium text-text-brand">
-                <Star className="h-3 w-3" />
-                {product.rating} ({product.reviews.toLocaleString()})
-              </span>
-            </div>
-
-            {/* Features */}
-            {product.features && product.features.length > 0 && (
-              <div className="flex flex-wrap gap-3 border-b border-border-subtle px-6 py-4">
-                {product.features.map((feature) => (
-                  <span
-                    key={feature}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-text-body"
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-                    {feature}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Price + CTA */}
-            <div className="mt-auto px-6 py-5">
-              <div className="mb-4 flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-text-primary">
-                  <CurrencyAmount
-                    amount={product.price}
-                    baseCurrency={product.currency}
-                  />
-                </span>
-                <span className="text-sm text-text-muted">/ person</span>
-              </div>
-              <AddToCartButton productId={product.id} />
-
               {product.bookedText && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs text-text-muted">
-                  <Zap className="h-3 w-3 text-amber-500" />
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-surface-brand-soft px-3 py-1 text-xs font-semibold text-brand">
+                  <Zap className="h-3 w-3" />
                   {product.bookedText}
-                </p>
+                </div>
               )}
             </div>
-          </div>
-        </section>
 
-        {/* ─── Trust Bar ─────────────────────────────── */}
-        <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            {
-              icon: Shield,
-              label: "Free Cancellation",
-              sub: "Up to 24h before",
-            },
-            { icon: Zap, label: "Instant Confirmation", sub: "No waiting" },
-            {
-              icon: Users,
-              label: "Small Groups",
-              sub: "Max 12 travelers",
-            },
-            { icon: Heart, label: "Highly Rated", sub: `${product.rating}/5 stars` },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="flex items-start gap-3 rounded-xl border border-border-soft bg-white px-4 py-3.5"
-            >
-              <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-              <div>
-                <p className="text-xs font-semibold text-text-primary">
-                  {item.label}
-                </p>
-                <p className="text-[11px] text-text-muted">{item.sub}</p>
+            {/* About this activity */}
+            <section className="mb-6 rounded-2xl border border-border-soft bg-surface-base p-5">
+              <h2 className="mb-4 text-base font-bold text-text-primary">
+                About this activity
+              </h2>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <Shield className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Free cancellation</p>
+                    <p className="text-xs text-text-muted">Cancel up to 24 hours in advance for a full refund</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Duration {product.duration}</p>
+                    <p className="text-xs text-text-muted">Check availability to see starting times</p>
+                  </div>
+                </li>
+                {product.features?.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                    <p className="text-sm font-semibold text-text-primary">{feature}</p>
+                  </li>
+                ))}
+                <li className="flex items-start gap-3">
+                  <Users className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Small groups</p>
+                    <p className="text-xs text-text-muted">Personalised experience in a small group setting</p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            {/* Highlights + Includes */}
+            <section className="mb-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border-soft bg-surface-base px-5 py-4">
+                <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-text-primary">
+                  Experience Highlights
+                </h2>
+                <ul className="space-y-2.5">
+                  {product.highlights.map((h) => (
+                    <li key={h} className="flex items-start gap-2 text-sm text-text-body">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-          ))}
-        </section>
+              <div className="rounded-2xl border border-border-soft bg-surface-base px-5 py-4">
+                <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-text-primary">
+                  What&apos;s Included
+                </h2>
+                <ul className="space-y-2.5">
+                  {product.includes.map((inc) => (
+                    <li key={inc} className="flex items-start gap-2 text-sm text-text-body">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                      {inc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
 
-        {/* ─── Highlights / Includes ─────────────────── */}
-        <section className="mt-8 grid gap-6 md:grid-cols-2">
-          <article className="rounded-2xl border border-border-soft bg-white px-6 py-5">
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-text-primary">
-              Experience Highlights
-            </h2>
-            <ul className="space-y-3">
-              {product.highlights.map((highlight) => (
-                <li
-                  key={highlight}
-                  className="flex items-start gap-2.5 text-sm text-text-body"
-                >
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-                  {highlight}
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="rounded-2xl border border-border-soft bg-white px-6 py-5">
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-text-primary">
-              What&apos;s Included
-            </h2>
-            <ul className="space-y-3">
-              {product.includes.map((entry) => (
-                <li
-                  key={entry}
-                  className="flex items-start gap-2.5 text-sm text-text-body"
-                >
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-                  {entry}
-                </li>
-              ))}
-            </ul>
-          </article>
-        </section>
-
-        {/* ─── Related Experiences ────────────────────── */}
-        {related.length > 0 && (
-          <section className="mt-12">
-            <h2 className="mb-5 text-lg font-bold text-text-primary">
-              You Might Also Like
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {related.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.id}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-white transition-colors hover:border-brand/30"
-                >
-                  <div className="relative overflow-hidden">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      width={600}
-                      height={400}
-                      className="aspect-[3/2] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                    />
-                    {item.badge && (
-                      <span className="absolute left-3 top-3 rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-semibold text-white">
-                        {item.badge}
-                      </span>
-                    )}
+            {/* Reviews */}
+            {product.highlightedReviews && product.highlightedReviews.length > 0 && (
+              <section className="mb-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-base font-bold text-text-primary">
+                    Highlighted reviews from other travelers
+                  </h2>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <span className="text-sm font-bold text-text-primary">{product.rating}</span>
+                    <span className="ml-1 text-xs text-text-muted">({product.reviews.toLocaleString()})</span>
                   </div>
-                  <div className="flex flex-1 flex-col px-4 py-3.5">
-                    <p className="text-[11px] font-medium text-text-muted">
-                      {item.location} · {item.duration}
-                    </p>
-                    <h3 className="mt-1 text-sm font-semibold leading-snug text-text-primary line-clamp-2 group-hover:text-brand transition-colors">
-                      {item.title}
-                    </h3>
-                    <div className="mt-auto flex items-center justify-between pt-3">
-                      <span className="flex items-center gap-1 text-xs text-text-muted">
-                        <Star className="h-3 w-3 text-amber-500" />
-                        {item.rating} ({item.reviews.toLocaleString()})
-                      </span>
-                      <span className="text-sm font-bold text-text-primary">
-                        <CurrencyAmount
-                          amount={item.price}
-                          baseCurrency={item.currency}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {product.highlightedReviews.map((review, i) => (
+                    <article
+                      key={i}
+                      className="rounded-2xl border border-border-soft bg-surface-base p-5"
+                    >
+                      <div className="mb-3 flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, s) => (
+                          <Star
+                            key={s}
+                            className={`h-4 w-4 ${s < review.rating ? "fill-amber-400 text-amber-400" : "fill-border-default text-border-default"}`}
+                          />
+                        ))}
+                        <span className="ml-1 text-sm font-bold text-text-primary">{review.rating}</span>
+                      </div>
+                      <div className="mb-3 flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+                          {review.reviewer.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-text-primary">
+                            {review.reviewer} — {review.country}
+                          </p>
+                          <p className="text-[11px] text-text-muted">
+                            {review.date}
+                            {review.verified && (
+                              <span className="ml-1.5 text-emerald-500">· Verified booking</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-relaxed text-text-body">{review.text}</p>
+                    </article>
+                  ))}
+                </div>
+                <button type="button" className="mt-4 text-sm font-medium text-brand hover:underline">
+                  See more reviews
+                </button>
+              </section>
+            )}
+
+            {/* Availability panel — mobile only (lg hides it here) */}
+            <section className="mb-8 lg:hidden">
+              <ProductAvailabilityPanel
+                productId={product.id}
+                basePrice={product.price}
+                baseCurrency={product.currency}
+              />
+            </section>
+
+            {/* Related products */}
+            {related.length > 0 && (
+              <section>
+                <h2 className="mb-4 text-base font-bold text-text-primary">
+                  You might also like
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {related.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/products/${item.id}`}
+                      className="group flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface-base transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                      <div className="relative overflow-hidden">
+                        <Image
+                          src={item.image}
+                          alt={item.title}
+                          width={400}
+                          height={270}
+                          className="aspect-3/2 w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                          unoptimized
                         />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                        {item.badge && (
+                          <span className="absolute left-2.5 top-2.5 rounded-full bg-brand px-2.5 py-0.5 text-[10px] font-semibold text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-1 flex-col p-3.5">
+                        <p className="text-[11px] text-text-muted">
+                          {item.location} · {item.duration}
+                        </p>
+                        <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-text-primary group-hover:text-brand transition-colors">
+                          {item.title}
+                        </h3>
+                        <div className="mt-auto flex items-center justify-between pt-2.5">
+                          <span className="flex items-center gap-1 text-xs text-text-muted">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            {item.rating}
+                          </span>
+                          <span className="text-sm font-bold text-text-heading">
+                            <CurrencyAmount amount={item.price} baseCurrency={item.currency} />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Right: sticky availability sidebar — desktop only */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <ProductAvailabilityPanel
+                productId={product.id}
+                basePrice={product.price}
+                baseCurrency={product.currency}
+              />
             </div>
-          </section>
-        )}
+          </aside>
+        </div>
       </main>
 
       <Footer />

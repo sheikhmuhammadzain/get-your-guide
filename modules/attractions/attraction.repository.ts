@@ -76,6 +76,11 @@ export async function getAttractionsForPlanning(cities: string[], interests: Int
   return byCity;
 }
 
+export async function getAttractionBySlug(slug: string) {
+  await connectToDatabase();
+  return AttractionModel.findOne({ slug }).lean();
+}
+
 /** Look up attractions by their _id values and return a Map<string, doc> */
 export async function getAttractionsByIds(ids: string[]) {
   await connectToDatabase();

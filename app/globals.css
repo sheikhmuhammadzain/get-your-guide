@@ -35,6 +35,11 @@
   --brand-hover: #005fb8;
   --metric-primary: #0ba5ec;
   --metric-secondary: #f04438;
+  --timer-bg: #fff1f2;
+  --timer-border: #e11d48;
+  --timer-text: #9f1239;
+  --timer-icon: #e11d48;
+  --timer-bold: #881337;
 }
 
 .dark {
@@ -72,6 +77,11 @@
   --brand-hover: #6db3f8;
   --metric-primary: #0ba5ec;
   --metric-secondary: #f04438;
+  --timer-bg: rgba(228, 40, 60, 0.1);
+  --timer-border: rgba(228, 80, 90, 0.35);
+  --timer-text: #fda4af;
+  --timer-icon: #fb7185;
+  --timer-bold: #fecdd3;
 }
 
 @theme inline {

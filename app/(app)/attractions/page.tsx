@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+import Link from "next/link";
+import Image from "next/image";
 import {
   MapPin,
   Clock,
@@ -13,7 +14,19 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { listAttractionsService, supportedInterestTags } from "@/modules/attractions/attraction.service";
 
-const CITIES = ["istanbul", "cappadocia", "ephesus", "pamukkale", "antalya", "bodrum"];
+const CITIES = [
+  "istanbul",
+  "cappadocia",
+  "ephesus",
+  "pamukkale",
+  "antalya",
+  "bodrum",
+  "bursa",
+  "ankara",
+  "trabzon",
+  "konya",
+  "canakkale",
+];
 
 interface SearchParams {
   city?: string;
@@ -33,7 +46,7 @@ export default async function AttractionsPage({
   const page = await listAttractionsService({
     city,
     tags: tagsRaw,
-    limit: 24,
+    limit: 36,
   });
 
   function buildHref(newCity?: string, newTags?: string[]) {
@@ -48,7 +61,7 @@ export default async function AttractionsPage({
     <div className="min-h-screen bg-surface-muted text-text-heading">
       <Header />
 
-      <main className="mx-auto max-w-[1200px] px-4 py-10 md:px-6">
+      <main className="mx-auto max-w-300 px-4 py-10 md:px-6">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center gap-1.5 text-xs text-text-muted">
@@ -74,7 +87,7 @@ export default async function AttractionsPage({
         </div>
 
         {/* Filters */}
-        <div className="mb-8 space-y-5 rounded-2xl border border-border-soft bg-white p-5">
+        <div className="mb-8 space-y-5 rounded-2xl border border-border-soft bg-surface-base p-5">
           <div className="flex items-center gap-2 text-sm font-bold text-text-primary">
             <SlidersHorizontal className="h-4 w-4 text-brand" />
             Filters
@@ -88,10 +101,11 @@ export default async function AttractionsPage({
             <div className="flex flex-wrap gap-2">
               <Link
                 href={buildHref(undefined, activeTags.length ? activeTags : undefined)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${!city
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  !city
                     ? "border-brand bg-brand text-white"
-                    : "border-border-default bg-white text-text-body hover:bg-surface-subtle"
-                  }`}
+                    : "border-border-default bg-surface-base text-text-body hover:bg-surface-subtle"
+                }`}
               >
                 All Cities
               </Link>
@@ -99,10 +113,11 @@ export default async function AttractionsPage({
                 <Link
                   key={c}
                   href={buildHref(c, activeTags.length ? activeTags : undefined)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${city === c
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    city === c
                       ? "border-brand bg-brand text-white"
-                      : "border-border-default bg-white text-text-body hover:bg-surface-subtle"
-                    }`}
+                      : "border-border-default bg-surface-base text-text-body hover:bg-surface-subtle"
+                  }`}
                 >
                   <MapPin className="h-3 w-3" />
                   {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -119,10 +134,11 @@ export default async function AttractionsPage({
             <div className="flex flex-wrap gap-2">
               <Link
                 href={buildHref(city, undefined)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${activeTags.length === 0
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  activeTags.length === 0
                     ? "border-brand bg-brand text-white"
-                    : "border-border-default bg-white text-text-body hover:bg-surface-subtle"
-                  }`}
+                    : "border-border-default bg-surface-base text-text-body hover:bg-surface-subtle"
+                }`}
               >
                 All Interests
               </Link>
@@ -136,10 +152,11 @@ export default async function AttractionsPage({
                   <Link
                     key={tag}
                     href={buildHref(city, nextTags.length ? nextTags : undefined)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${isActive
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      isActive
                         ? "border-brand bg-brand text-white"
-                        : "border-border-default bg-white text-text-body hover:bg-surface-subtle"
-                      }`}
+                        : "border-border-default bg-surface-base text-text-body hover:bg-surface-subtle"
+                    }`}
                   >
                     <Tag className="h-3 w-3" />
                     {tag.charAt(0).toUpperCase() + tag.slice(1)}
@@ -160,8 +177,7 @@ export default async function AttractionsPage({
                 {page.data.length === 1 ? "attraction" : "attractions"}
                 {city ? (
                   <>
-                    {" "}
-                    in{" "}
+                    {" "}in{" "}
                     <span className="font-semibold text-text-primary">
                       {city.charAt(0).toUpperCase() + city.slice(1)}
                     </span>
@@ -169,8 +185,7 @@ export default async function AttractionsPage({
                 ) : null}
                 {activeTags.length > 0 ? (
                   <>
-                    {" "}
-                    tagged{" "}
+                    {" "}tagged{" "}
                     <span className="font-semibold text-text-primary">
                       {activeTags.join(", ")}
                     </span>
@@ -207,84 +222,99 @@ export default async function AttractionsPage({
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {page.data.map((item) => (
-              <article
+              <Link
                 key={item.id}
-                className="group flex flex-col rounded-2xl border border-border-soft bg-white p-5 transition-colors hover:border-brand/30"
+                href={`/attractions/${item.slug}`}
+                className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface-base transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl"
               >
-                {/* Title & City */}
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <h2 className="text-base font-bold leading-snug text-text-primary group-hover:text-brand transition-colors">
-                    {item.name}
-                  </h2>
+                {/* Image */}
+                <div className="relative aspect-4/3 w-full overflow-hidden bg-surface-subtle">
+                  <Image
+                    src={`https://picsum.photos/seed/${item.slug}/800/600`}
+                    alt={item.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
+                  />
                   {item.popularityScore >= 90 && (
-                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <div className="absolute left-3 top-3 flex items-center gap-1 rounded-sm bg-brand-hover px-2 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
+                      <Star className="h-3 w-3 fill-current" />
                       Top Rated
-                    </span>
+                    </div>
                   )}
-                </div>
-
-                {/* Description */}
-                <p className="mb-4 flex-1 text-sm leading-relaxed text-text-muted line-clamp-2">
-                  {item.description}
-                </p>
-
-                {/* Metadata chips */}
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-surface-subtle px-2 py-1 text-[11px] font-medium text-text-body">
+                  <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-surface-base/90 px-2.5 py-1 text-[11px] font-semibold text-text-body backdrop-blur-sm">
                     <MapPin className="h-3 w-3 text-brand" />
                     {item.city.charAt(0).toUpperCase() + item.city.slice(1)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-surface-subtle px-2 py-1 text-[11px] font-medium text-text-body">
-                    <Clock className="h-3 w-3 text-brand" />
-                    {item.avgDurationMin} min
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-surface-subtle px-2 py-1 text-[11px] font-medium text-text-body">
-                    🕐 {item.openingHours}
-                  </span>
-                </div>
-
-                {/* Tags */}
-                <div className="mb-4 flex flex-wrap gap-1.5">
-                  {item.tags.map((tag) => (
-                    <Link
-                      key={tag}
-                      href={buildHref(city, [tag])}
-                      className="rounded-full border border-border-subtle px-2 py-0.5 text-[10px] font-medium text-text-muted transition-colors hover:border-brand hover:text-brand"
-                    >
-                      {tag}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Price + Best Months */}
-                <div className="flex items-center justify-between border-t border-border-subtle pt-3">
-                  <div className="text-sm font-bold text-text-primary">
-                    <CurrencyAmount
-                      amount={item.ticketPriceRange?.min ?? 0}
-                      baseCurrency={item.ticketPriceRange?.currency ?? "TRY"}
-                    />
-                    {" — "}
-                    <CurrencyAmount
-                      amount={item.ticketPriceRange?.max ?? 0}
-                      baseCurrency={item.ticketPriceRange?.currency ?? "TRY"}
-                    />
                   </div>
-                  {item.bestVisitMonths?.length > 0 && (
-                    <span className="text-[10px] text-text-subtle">
-                      Best:{" "}
-                      {item.bestVisitMonths
-                        .slice(0, 3)
-                        .map((m) =>
-                          new Date(2024, m - 1).toLocaleString("en", {
-                            month: "short",
-                          }),
-                        )
-                        .join(", ")}
-                    </span>
-                  )}
                 </div>
-              </article>
+
+                {/* Content */}
+                <div className="flex flex-1 flex-col gap-2 p-4">
+                  <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-text-heading transition-colors group-hover:text-brand">
+                    {item.name}
+                  </h3>
+
+                  <p className="line-clamp-2 text-sm leading-relaxed text-text-muted">
+                    {item.description}
+                  </p>
+
+                  {/* Meta row */}
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-body">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-brand" />
+                      {item.avgDurationMin} min
+                    </span>
+                    <span className="text-border-default">·</span>
+                    <span>{item.openingHours}</span>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-border-subtle px-2 py-0.5 text-[10px] font-medium text-text-muted"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Price row */}
+                  <div className="mt-auto flex items-center justify-between border-t border-border-subtle pt-3">
+                    <div className="text-sm font-bold text-text-heading">
+                      {item.ticketPriceRange?.min === 0 && item.ticketPriceRange?.max === 0 ? (
+                        <span className="text-emerald-500 font-semibold">Free entry</span>
+                      ) : (
+                        <>
+                          <CurrencyAmount
+                            amount={item.ticketPriceRange?.min ?? 0}
+                            baseCurrency={item.ticketPriceRange?.currency ?? "TRY"}
+                          />
+                          {" — "}
+                          <CurrencyAmount
+                            amount={item.ticketPriceRange?.max ?? 0}
+                            baseCurrency={item.ticketPriceRange?.currency ?? "TRY"}
+                          />
+                        </>
+                      )}
+                    </div>
+                    {item.bestVisitMonths?.length > 0 && (
+                      <span className="text-[10px] text-text-subtle">
+                        Best:{" "}
+                        {item.bestVisitMonths
+                          .slice(0, 3)
+                          .map((m) =>
+                            new Date(2024, m - 1).toLocaleString("en", {
+                              month: "short",
+                            }),
+                          )
+                          .join(", ")}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         )}
@@ -298,7 +328,7 @@ export default async function AttractionsPage({
                 ...(tagsRaw ? { tags: tagsRaw } : {}),
                 cursor: page.nextCursor,
               }).toString()}`}
-              className="inline-flex items-center gap-2 rounded-lg border border-border-default px-5 py-2.5 text-sm font-medium text-text-body transition-colors hover:bg-surface-subtle"
+              className="inline-flex items-center gap-2 rounded-lg border border-border-default bg-surface-base px-5 py-2.5 text-sm font-medium text-text-body transition-colors hover:bg-surface-subtle"
             >
               Load More
               <ChevronRight className="h-4 w-4" />

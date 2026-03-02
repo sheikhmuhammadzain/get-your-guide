@@ -20,11 +20,11 @@ export default async function CheckoutSuccessPage({
     <div className="min-h-screen bg-surface-muted text-text-heading">
       <Header />
 
-      <main className="mx-auto max-w-[640px] px-4 py-16 md:px-6">
+      <main className="mx-auto max-w-160 px-4 py-16 md:px-6">
         {/* Success Icon */}
         <div className="flex flex-col items-center text-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-surface-success-soft">
-            <CheckCircle2 className="h-10 w-10 text-green-600" />
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30">
+            <CheckCircle2 className="h-10 w-10 text-emerald-600" />
           </div>
 
           <h1 className="text-2xl font-bold text-text-primary">
@@ -37,7 +37,7 @@ export default async function CheckoutSuccessPage({
         </div>
 
         {/* Order Card */}
-        <div className="mt-8 rounded-2xl border border-border-soft bg-white p-6">
+        <div className="mt-8 rounded-2xl border border-border-soft bg-surface-base p-6">
           <div className="flex items-center justify-between border-b border-border-subtle pb-4">
             <span className="text-xs font-medium uppercase tracking-wide text-text-muted">
               Confirmation ID
