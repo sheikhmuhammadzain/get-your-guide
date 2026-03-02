@@ -106,7 +106,7 @@ export default async function AttractionDetailPage({
 
             {/* Tags */}
             <div className="mt-4 flex flex-wrap gap-2">
-              {attraction.tags.map((tag) => (
+              {attraction.tags.map((tag: string) => (
                 <Link
                   key={tag}
                   href={`/attractions?tags=${tag}`}
