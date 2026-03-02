@@ -32,12 +32,12 @@ export default async function AttractionDetailPage({
   const relatedProducts = products
     .filter((p) =>
       p.location.toLowerCase() === attraction.city.toLowerCase() ||
-      attraction.tags.some((tag) => p.category.toLowerCase().includes(tag)),
+      attraction.tags.some((tag: string) => p.category.toLowerCase().includes(tag)),
     )
     .slice(0, 3);
 
   const bestMonthNames = attraction.bestVisitMonths
-    .map((m) => new Date(2024, m - 1).toLocaleString("en", { month: "long" }))
+    .map((m: number) => new Date(2024, m - 1).toLocaleString("en", { month: "long" }))
     .join(", ");
 
   const isFree =
