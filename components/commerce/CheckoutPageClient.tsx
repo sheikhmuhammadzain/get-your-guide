@@ -90,11 +90,10 @@ function Stars({ rating }: { rating: number }) {
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
-          className={`h-3 w-3 ${
-            i < full
+          className={`h-3 w-3 ${i < full
               ? "fill-amber-400 text-amber-400"
               : "fill-surface-subtle text-border-default"
-          }`}
+            }`}
         />
       ))}
       <span className="ml-1 text-xs text-text-muted">{rating.toFixed(1)}</span>
@@ -140,7 +139,7 @@ export default function CheckoutPageClient() {
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [countryName, setCountryName] = useState("Pakistan");
+  const [countryName, setCountryName] = useState("United Kingdom");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [promoOpen, setPromoOpen] = useState(false);
