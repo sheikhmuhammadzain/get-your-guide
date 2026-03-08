@@ -12,6 +12,7 @@ import {
 import CurrencyAmount from "@/components/CurrencyAmount";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { formatMonthShort } from "@/lib/format/date";
 import { listAttractionsService, supportedInterestTags } from "@/modules/attractions/attraction.service";
 
 const CITIES = [
@@ -304,11 +305,7 @@ export default async function AttractionsPage({
                         Best:{" "}
                         {item.bestVisitMonths
                           .slice(0, 3)
-                          .map((m) =>
-                            new Date(2024, m - 1).toLocaleString("en", {
-                              month: "short",
-                            }),
-                          )
+                          .map((m) => formatMonthShort(m))
                           .join(", ")}
                       </span>
                     )}

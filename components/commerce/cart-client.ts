@@ -1,6 +1,6 @@
 "use client"
 
-import {useCallback, useMemo, useState} from "react"
+import {useCallback, useEffect, useMemo, useState} from "react"
 import {getProductById} from "@/lib/data"
 import {
   CART_STORAGE_KEY,
@@ -25,7 +25,11 @@ function writeCart(items: CartItem[]) {
 }
 
 export function useCartState() {
-  const [items, setItems] = useState<CartItem[]>(() => readCart())
+  const [items, setItems] = useState<CartItem[]>([])
+
+  useEffect(() => {
+    setItems(readCart())
+  }, [])
 
   const setAndPersist = useCallback(
     (updater: CartItem[] | ((prev: CartItem[]) => CartItem[])) => {

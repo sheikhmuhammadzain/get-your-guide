@@ -124,6 +124,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`${plusJakartaSans.variable} antialiased`}
       >
         <ThemeProvider>

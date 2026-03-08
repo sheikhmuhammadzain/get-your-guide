@@ -57,6 +57,18 @@ export default function CartPageClient() {
   const { preferences } = useAppPreferences();
   const countdown = useCountdown(30 * 60);
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
+  const [todayLabel, setTodayLabel] = useState("");
+
+  useEffect(() => {
+    setTodayLabel(
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }),
+    );
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,13 +157,6 @@ export default function CartPageClient() {
 
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
 
-  const todayLabel = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
   /* ─── Cart ─────────────────────────────────────── */
   return (
     <>
@@ -191,7 +196,7 @@ export default function CartPageClient() {
           {/* Date group header */}
           <div className="mb-4 border-b border-border-subtle pb-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-              {todayLabel}
+              {todayLabel || "Today"}
             </p>
           </div>
 

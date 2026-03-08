@@ -77,7 +77,6 @@ interface PlannerPersistedState {
 }
 
 function readPersistedState(): Partial<PlannerPersistedState> {
-  if (typeof window === 'undefined') return {};
   try {
     const raw = window.localStorage.getItem(PLANNER_STORAGE_KEY);
     if (!raw) return {};
@@ -87,30 +86,28 @@ function readPersistedState(): Partial<PlannerPersistedState> {
   }
 }
 
+function getTodayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export default function ItineraryGenerator() {
   const { preferences } = useAppPreferences();
   const userCurrency = preferences.currency;
-  const saved = useMemo(() => readPersistedState(), []);
-
-  const [destinations, setDestinations] = useState<string[]>(
-    () => saved.destinations?.length ? saved.destinations : ['istanbul'],
-  );
-  const [duration, setDuration] = useState<string>(saved.duration ?? '4-7');
-  const [interest, setInterest] = useState<InterestTag>(saved.interest ?? 'culture');
-  const [budget, setBudget] = useState<BudgetLevel>(saved.budget ?? 'standard');
-  const [transportFrom, setTransportFrom] = useState<string>(saved.transportFrom ?? 'istanbul');
-  const [transportMode, setTransportMode] = useState<'car' | 'bus' | 'flight'>(saved.transportMode ?? 'bus');
-  const [transportDepartureDate, setTransportDepartureDate] = useState<string>(
-    () => saved.transportDepartureDate ?? new Date().toISOString().slice(0, 10),
-  );
+  const [destinations, setDestinations] = useState<string[]>(['istanbul']);
+  const [duration, setDuration] = useState<string>('4-7');
+  const [interest, setInterest] = useState<InterestTag>('culture');
+  const [budget, setBudget] = useState<BudgetLevel>('standard');
+  const [transportFrom, setTransportFrom] = useState<string>('istanbul');
+  const [transportMode, setTransportMode] = useState<'car' | 'bus' | 'flight'>('bus');
+  const [transportDepartureDate, setTransportDepartureDate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [realtimeLoading, setRealtimeLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveResult, setSaveResult] = useState<string | null>(null);
-  const [savedItineraryId, setSavedItineraryId] = useState<string | null>(saved.savedItineraryId ?? null);
-  const [result, setResult] = useState<GeneratedItinerary | null>(saved.result ?? null);
-  const [requestSnapshot, setRequestSnapshot] = useState<ItineraryRequest | null>(saved.requestSnapshot ?? null);
+  const [savedItineraryId, setSavedItineraryId] = useState<string | null>(null);
+  const [result, setResult] = useState<GeneratedItinerary | null>(null);
+  const [requestSnapshot, setRequestSnapshot] = useState<ItineraryRequest | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [currency, setCurrency] = useState<CurrencyData | null>(null);
   const [transport, setTransport] = useState<TransportData | null>(null);
@@ -118,8 +115,40 @@ export default function ItineraryGenerator() {
   const daysSelected = useMemo(() => DURATION_DAYS[duration] ?? 5, [duration]);
   const primaryDestination = destinations[0] ?? 'istanbul';
 
+  useEffect(() => {
+    const saved = readPersistedState();
+
+    if (saved.destinations?.length) {
+      setDestinations(saved.destinations);
+    }
+    if (saved.duration) {
+      setDuration(saved.duration);
+    }
+    if (saved.interest) {
+      setInterest(saved.interest);
+    }
+    if (saved.budget) {
+      setBudget(saved.budget);
+    }
+    if (saved.transportFrom) {
+      setTransportFrom(saved.transportFrom);
+    }
+    if (saved.transportMode) {
+      setTransportMode(saved.transportMode);
+    }
+
+    setTransportDepartureDate(saved.transportDepartureDate ?? getTodayIsoDate());
+    setSavedItineraryId(saved.savedItineraryId ?? null);
+    setResult(saved.result ?? null);
+    setRequestSnapshot(saved.requestSnapshot ?? null);
+  }, []);
+
   /* ── Persist form state to localStorage ── */
   useEffect(() => {
+    if (!transportDepartureDate) {
+      return;
+    }
+
     const state: PlannerPersistedState = {
       destinations,
       duration,
@@ -205,6 +234,13 @@ export default function ItineraryGenerator() {
 
   useEffect(() => {
     let cancelled = false;
+
+    if (!transportDepartureDate) {
+      setRealtimeLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
 
     async function loadRealtime() {
       setRealtimeLoading(true);

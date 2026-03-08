@@ -13,6 +13,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CurrencyAmount from "@/components/CurrencyAmount";
+import { formatMonthLong } from "@/lib/format/date";
 import { getAttractionBySlug } from "@/modules/attractions/attraction.repository";
 import { products } from "@/lib/data";
 
@@ -37,7 +38,7 @@ export default async function AttractionDetailPage({
     .slice(0, 3);
 
   const bestMonthNames = attraction.bestVisitMonths
-    .map((m: number) => new Date(2024, m - 1).toLocaleString("en", { month: "long" }))
+    .map((m: number) => formatMonthLong(m))
     .join(", ");
 
   const isFree =

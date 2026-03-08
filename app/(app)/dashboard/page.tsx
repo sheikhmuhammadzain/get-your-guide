@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import CurrencyAmount from "@/components/CurrencyAmount";
 import PageScaffold from "@/components/PageScaffold";
 import { getAuthSession } from "@/lib/auth/get-session";
+import { formatUtcDateTime } from "@/lib/format/date";
 import { isAdminSession } from "@/modules/auth/guards";
 import { itineraryTitle, parseGeneratedItinerary } from "@/modules/itineraries/presenter";
 import { listItinerariesService } from "@/modules/itineraries/itinerary.service";
@@ -105,7 +106,7 @@ function DashboardContent({
               <div key={order.id} className="rounded-lg border border-border-soft p-3 text-sm">
                 <p className="font-medium">{order.orderCode}</p>
                 <p className="text-text-body">
-                  <CurrencyAmount amount={order.total} baseCurrency={order.currency} /> | {new Date(order.createdAt).toLocaleString()}
+                  <CurrencyAmount amount={order.total} baseCurrency={order.currency} /> | {formatUtcDateTime(order.createdAt)}
                 </p>
               </div>
             ))}
@@ -120,7 +121,7 @@ function DashboardContent({
             <article key={itinerary.id} className="rounded-xl border border-border-default p-5">
               <h2 className="mb-2 font-bold">{itineraryTitle(itinerary.generatedPlan, "Trip")}</h2>
               <p className="mb-2 text-sm text-text-muted">
-                Status: {itinerary.status} | Updated: {new Date(itinerary.updatedAt).toLocaleString()}
+                Status: {itinerary.status} | Updated: {formatUtcDateTime(itinerary.updatedAt)}
               </p>
               <p className="mb-3 line-clamp-3 text-sm text-text-body">{itinerary.notes || "No notes"}</p>
               {parsed ? (

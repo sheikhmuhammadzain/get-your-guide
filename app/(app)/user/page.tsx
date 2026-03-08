@@ -4,6 +4,7 @@ import PageScaffold from "@/components/PageScaffold";
 import UserAccountSettingsCard from "@/components/UserAccountSettingsCard";
 import UserPreferencesCard from "@/components/UserPreferencesCard";
 import { getAuthSession } from "@/lib/auth/get-session";
+import { formatUtcDateTime } from "@/lib/format/date";
 import { listItinerariesService } from "@/modules/itineraries/itinerary.service";
 import { itineraryTitle } from "@/modules/itineraries/presenter";
 import { listUserOrdersService } from "@/modules/orders/order.service";
@@ -69,7 +70,7 @@ export default async function UserPanelPage() {
               <article key={item.id} className="rounded-lg border border-border-soft p-3">
                 <p className="font-medium">{itineraryTitle(item.generatedPlan, "Trip")}</p>
                 <p className="text-xs text-text-muted">
-                  Status: {item.status} | Updated: {new Date(item.updatedAt).toLocaleString()}
+                  Status: {item.status} | Updated: {formatUtcDateTime(item.updatedAt)}
                 </p>
               </article>
             ))}
@@ -87,7 +88,7 @@ export default async function UserPanelPage() {
               <article key={order.id} className="rounded-lg border border-border-soft p-3">
                 <p className="font-medium">{order.orderCode}</p>
                 <p className="text-xs text-text-muted">
-                  <CurrencyAmount amount={order.total} baseCurrency={order.currency} /> | {order.customer.email} | {new Date(order.createdAt).toLocaleString()}
+                  <CurrencyAmount amount={order.total} baseCurrency={order.currency} /> | {order.customer.email} | {formatUtcDateTime(order.createdAt)}
                 </p>
               </article>
             ))}

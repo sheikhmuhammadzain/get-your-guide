@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PageScaffold from "@/components/PageScaffold";
 import { getAuthSession } from "@/lib/auth/get-session";
+import { formatUtcDateTime } from "@/lib/format/date";
 import { listItinerariesService } from "@/modules/itineraries/itinerary.service";
 import { itineraryTitle, parseGeneratedItinerary } from "@/modules/itineraries/presenter";
 
@@ -48,7 +49,7 @@ export default async function ItinerariesPage() {
               <article key={item.id} className="rounded-xl border border-border-default bg-surface-base p-5">
                 <h2 className="font-semibold">{itineraryTitle(item.generatedPlan, "Turkey trip")}</h2>
                 <p className="mt-1 text-sm text-text-body">
-                  Status: {item.status} • Updated: {new Date(item.updatedAt).toLocaleString()}
+                  Status: {item.status} • Updated: {formatUtcDateTime(item.updatedAt)}
                 </p>
                 {parsed ? (
                   <p className="mt-2 text-sm text-text-body">

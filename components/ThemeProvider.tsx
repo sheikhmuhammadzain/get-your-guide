@@ -16,19 +16,26 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 const STORAGE_KEY = "gyg-theme";
 
-function getInitialTheme(): Theme {
-    if (typeof window === "undefined") return "light";
+function readStoredTheme(): Theme | null {
     try {
         const stored = window.localStorage.getItem(STORAGE_KEY);
         if (stored === "dark" || stored === "light") return stored;
     } catch {
         // localStorage not available
     }
-    return "light";
+    return null;
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>(getInitialTheme);
+    const [theme, setTheme] = useState<Theme>("light");
+
+    useEffect(() => {
+        const root = document.documentElement;
+        const storedTheme = readStoredTheme();
+        const nextTheme =
+            storedTheme ?? (root.classList.contains("dark") ? "dark" : "light");
+        setTheme(nextTheme);
+    }, []);
 
     /* Apply class to <html> whenever theme changes */
     useEffect(() => {

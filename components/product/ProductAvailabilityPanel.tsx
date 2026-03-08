@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CalendarDays,
@@ -44,8 +44,8 @@ export default function ProductAvailabilityPanel({
   basePrice,
   baseCurrency,
 }: ProductAvailabilityPanelProps) {
-  const today = new Date().toISOString().slice(0, 10);
-  const [date, setDate] = useState(today);
+  const [today, setToday] = useState("");
+  const [date, setDate] = useState("");
   const [travelers, setTravelers] = useState(1);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AvailabilityResponse | null>(null);
@@ -54,6 +54,12 @@ export default function ProductAvailabilityPanel({
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const { addItem } = useCartState();
   const router = useRouter();
+
+  useEffect(() => {
+    const nextToday = new Date().toISOString().slice(0, 10);
+    setToday(nextToday);
+    setDate((current) => current || nextToday);
+  }, []);
 
   async function checkAvailability() {
     setLoading(true);
