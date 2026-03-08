@@ -50,7 +50,7 @@ export default function AuthCard({ mode }: AuthCardProps) {
     if (!response || response.error) {
       setError(
         isSignup
-          ? "Account creation failed. Use a unique email and a strong password (upper, lower, number, symbol)."
+          ? "An account with this email already exists."
           : "Sign in failed. Check your email and password.",
       );
       setIsLoading(false);
@@ -192,7 +192,7 @@ export default function AuthCard({ mode }: AuthCardProps) {
                   type="password"
                   value={fpNewPassword}
                   onChange={(e) => setFpNewPassword(e.target.value)}
-                  placeholder="At least 8 characters"
+                  placeholder="Enter new password"
                   className="h-11 w-full rounded-lg border border-border-strong bg-surface-base px-3 text-text-primary outline-none focus:border-brand"
                 />
                 <p className="mt-1 text-xs text-text-muted">
@@ -289,11 +289,6 @@ export default function AuthCard({ mode }: AuthCardProps) {
                 className="h-11 w-full rounded-lg border border-border-strong bg-surface-base px-3 text-text-primary outline-none focus:border-brand"
                 placeholder="Enter password"
               />
-              {isSignup && (
-                <p className="mt-1 text-xs text-text-muted">
-                  Use at least 8 characters with uppercase, lowercase, number, and symbol.
-                </p>
-              )}
             </label>
 
             <button

@@ -50,10 +50,6 @@ function buildProviders(): NonNullable<NextAuthOptions["providers"]> {
     return "anonymous";
   }
 
-  function hasStrongPassword(value: string) {
-    return /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value);
-  }
-
   providers.push(
     CredentialsProvider({
       name: "Email and Password",
@@ -102,9 +98,6 @@ function buildProviders(): NonNullable<NextAuthOptions["providers"]> {
 
         if (intent === "signup") {
           if (existing) {
-            return null;
-          }
-          if (password.length < 8 || !hasStrongPassword(password)) {
             return null;
           }
 
