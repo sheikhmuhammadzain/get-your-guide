@@ -17,8 +17,10 @@ import {
   Gift,
   Star,
   CreditCard,
+  Wallet,
   ShoppingBag,
   ArrowRight,
+  X,
 } from "lucide-react";
 import { getProductById } from "@/lib/data";
 import { getLanguageLocale, useAppPreferences } from "@/lib/preferences-client";
@@ -86,12 +88,14 @@ export default function CheckoutPaymentClient() {
   const [usdTotal, setUsdTotal] = useState<number | null>(null);
 
   /* Payment form */
-  const [payMethod, setPayMethod] = useState<"card" | "paypal" | "googlepay">("card");
+  const [payMethod, setPayMethod] = useState<"card" | "paypal">("card");
   const [selectedCurrency, setSelectedCurrency] = useState<"preferred" | "usd">("preferred");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [isPaypalDialogOpen, setIsPaypalDialogOpen] = useState(false);
   const [saveCard, setSaveCard] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +110,7 @@ export default function CheckoutPaymentClient() {
         const data = JSON.parse(raw) as CheckoutFormData;
         setFormData(data);
         setNameOnCard(data.fullName);
+        setPaypalEmail(data.email);
       }
     } catch { /* ignore */ }
   }, []);
@@ -184,8 +189,7 @@ export default function CheckoutPaymentClient() {
       maximumFractionDigits: 2,
     }).format(amount);
 
-  async function handlePay(e: React.FormEvent) {
-    e.preventDefault();
+  async function submitDemoPayment(paymentMethod: "card" | "paypal") {
     if (!formData) {
       setError("Contact details missing. Go back and fill in your details.");
       return;
@@ -200,7 +204,7 @@ export default function CheckoutPaymentClient() {
           items,
           customer: {
             fullName: formData.fullName,
-            email: formData.email,
+            email: paymentMethod === "paypal" ? (paypalEmail.trim() || formData.email) : formData.email,
             phone: `${formData.dialCode}${formData.phone}`,
             country: formData.country,
           },
@@ -215,6 +219,15 @@ export default function CheckoutPaymentClient() {
       setError(err instanceof Error ? err.message : "Payment failed");
       setIsSubmitting(false);
     }
+  }
+
+  async function handlePay(e: React.FormEvent) {
+    e.preventDefault();
+    await submitDemoPayment("card");
+  }
+
+  async function handlePaypalPay() {
+    await submitDemoPayment("paypal");
   }
 
   /* Empty cart guard */
@@ -488,7 +501,10 @@ export default function CheckoutPaymentClient() {
           <div className="border-t border-border-subtle">
             <button
               type="button"
-              onClick={() => setPayMethod("paypal")}
+              onClick={() => {
+                setPayMethod("paypal");
+                setIsPaypalDialogOpen(true);
+              }}
               className="flex w-full items-center justify-between px-5 py-4"
             >
               <div className="flex items-center gap-3">
@@ -508,67 +524,6 @@ export default function CheckoutPaymentClient() {
                 <span className="text-sky-500">Pal</span>
               </span>
             </button>
-            {payMethod === "paypal" && (
-              <div className="border-t border-border-subtle px-5 pb-4 pt-3">
-                <p className="mb-3 text-sm text-text-muted">
-                  You will be redirected to PayPal to complete your payment.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setPayMethod("card")}
-                  className="text-xs font-semibold text-brand underline underline-offset-2"
-                >
-                  Use card instead (demo mode)
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Google Pay */}
-          <div className="border-t border-border-subtle">
-            <button
-              type="button"
-              onClick={() => setPayMethod("googlepay")}
-              className="flex w-full items-center justify-between rounded-b-2xl px-5 py-4"
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                    payMethod === "googlepay" ? "border-brand" : "border-border-default"
-                  }`}
-                >
-                  {payMethod === "googlepay" && (
-                    <span className="h-2.5 w-2.5 rounded-full bg-brand" />
-                  )}
-                </span>
-                <span className="text-sm font-semibold text-text-primary">
-                  Google Pay
-                </span>
-              </div>
-              <span className="text-xs font-bold">
-                <span className="text-blue-500">G</span>
-                <span className="text-red-500">o</span>
-                <span className="text-yellow-500">o</span>
-                <span className="text-blue-500">g</span>
-                <span className="text-green-500">l</span>
-                <span className="text-red-500">e </span>
-                <span className="text-slate-500">Pay</span>
-              </span>
-            </button>
-            {payMethod === "googlepay" && (
-              <div className="border-t border-border-subtle rounded-b-2xl px-5 pb-4 pt-3">
-                <p className="mb-3 text-sm text-text-muted">
-                  Google Pay is not available in demo mode.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setPayMethod("card")}
-                  className="text-xs font-semibold text-brand underline underline-offset-2"
-                >
-                  Use card instead
-                </button>
-              </div>
-            )}
           </div>
         </section>
       </div>
@@ -757,6 +712,93 @@ export default function CheckoutPaymentClient() {
           )}
         </div>
       </aside>
+
+      {isPaypalDialogOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/45 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border-soft bg-surface-base shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border-soft px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-brand-subtle">
+                  <Wallet className="h-5 w-5 text-brand" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-text-primary">PayPal checkout</p>
+                  <p className="text-xs text-text-muted">Secure payment window</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPaypalDialogOpen(false)}
+                className="rounded-full p-2 text-text-muted transition-colors hover:bg-surface-subtle hover:text-text-primary"
+                aria-label="Close PayPal dialog"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="px-5 py-5">
+              <p className="text-sm text-text-body">
+                Enter your PayPal email to continue and complete your payment.
+              </p>
+
+              <div className="mt-4">
+                <label className="mb-1.5 block text-xs font-medium text-text-muted">
+                  PayPal email
+                </label>
+                <input
+                  type="email"
+                  value={paypalEmail}
+                  onChange={(e) => setPaypalEmail(e.target.value)}
+                  placeholder="paypal@example.com"
+                  className="h-11 w-full rounded-lg border border-border-default bg-surface-base px-3 text-sm text-text-primary outline-none focus:border-brand"
+                />
+              </div>
+
+              <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-border-soft bg-surface-subtle px-4 py-3">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <p className="text-sm text-text-body">
+                  You will confirm this payment and return to your booking once it is completed.
+                </p>
+              </div>
+
+              {error && (
+                <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-rose-300 bg-rose-100 px-4 py-3 dark:border-rose-800/40 dark:bg-rose-950/30">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+                </div>
+              )}
+
+              <div className="mt-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsPaypalDialogOpen(false)}
+                  className="flex h-11 flex-1 items-center justify-center rounded-lg border border-border-default bg-surface-base text-sm font-semibold text-text-body transition-colors hover:bg-surface-subtle"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handlePaypalPay()}
+                  disabled={isSubmitting}
+                  className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-brand text-sm font-bold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Paying…
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-4 w-4" />
+                      Pay with PayPal
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
