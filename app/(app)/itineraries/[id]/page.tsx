@@ -120,7 +120,7 @@ export default async function ItineraryDetailPage({
             <div className="h-4 w-px bg-border-default" />
             <div className="flex items-center gap-2 text-sm text-text-body">
               <Banknote className="h-4 w-4 text-brand" />
-              <span className="font-semibold">{generatedPlan.totalEstimatedCostTRY.toLocaleString()}</span> TRY estimated
+              <span className="font-semibold">{generatedPlan.totalEstimatedCostTRY.toLocaleString("en-US")}</span> TRY estimated
             </div>
           </div>
 
@@ -185,7 +185,7 @@ export default async function ItineraryDetailPage({
                               )}
                               <span className="inline-flex items-center gap-1 rounded-lg bg-surface-subtle px-2 py-0.5 text-[10px] font-medium text-text-body">
                                 <Banknote className="h-3 w-3 text-brand" />
-                                {item.costEstimateTRY.toLocaleString()} TRY
+                                {item.costEstimateTRY.toLocaleString("en-US")} TRY
                               </span>
                               {item.transportHint && (
                                 <span className="inline-flex items-center gap-1 rounded-lg bg-surface-subtle px-2 py-0.5 text-[10px] font-medium text-text-body">

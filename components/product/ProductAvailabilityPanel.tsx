@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   CalendarDays,
@@ -39,12 +39,25 @@ interface ProductAvailabilityPanelProps {
   baseCurrency: string;
 }
 
+function subscribeToTodayDate(_callback: () => void) {
+  void _callback;
+  return () => {};
+}
+
+function getTodayDateSnapshot() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export default function ProductAvailabilityPanel({
   productId,
   basePrice,
   baseCurrency,
 }: ProductAvailabilityPanelProps) {
-  const [today, setToday] = useState("");
+  const today = useSyncExternalStore(
+    subscribeToTodayDate,
+    getTodayDateSnapshot,
+    () => "",
+  );
   const [date, setDate] = useState("");
   const [travelers, setTravelers] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -54,12 +67,7 @@ export default function ProductAvailabilityPanel({
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const { addItem } = useCartState();
   const router = useRouter();
-
-  useEffect(() => {
-    const nextToday = new Date().toISOString().slice(0, 10);
-    setToday(nextToday);
-    setDate((current) => current || nextToday);
-  }, []);
+  const selectedDate = date || today;
 
   async function checkAvailability() {
     setLoading(true);
@@ -68,7 +76,7 @@ export default function ProductAvailabilityPanel({
 
     try {
       const res = await fetch(
-        `/api/v1/products/${productId}/availability?date=${date}&travelers=${travelers}`,
+        `/api/v1/products/${productId}/availability?date=${selectedDate}&travelers=${travelers}`,
       );
       const body = (await res.json()) as AvailabilityResponse & { detail?: string };
       if (!res.ok) {
@@ -110,8 +118,8 @@ export default function ProductAvailabilityPanel({
     router.push("/checkout");
   }
 
-  const selectedDateLabel = date
-    ? new Date(date + "T12:00:00").toLocaleDateString("en-US", {
+  const selectedDateLabel = selectedDate
+    ? new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
         day: "numeric",
@@ -158,7 +166,7 @@ export default function ProductAvailabilityPanel({
             <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
             <input
               type="date"
-              value={date}
+              value={selectedDate}
               min={today}
               onChange={(e) => setDate(e.target.value)}
               className="h-11 w-full rounded-lg border border-border-default bg-surface-base pl-9 pr-3 text-sm font-medium text-text-body outline-none focus:border-brand focus:ring-2 focus:ring-brand/10"
@@ -169,7 +177,7 @@ export default function ProductAvailabilityPanel({
         {/* CTA */}
         <button
           onClick={checkAvailability}
-          disabled={loading || !date}
+          disabled={loading || !selectedDate}
           className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-bold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
         >
           {loading ? (
@@ -311,6 +319,16 @@ export default function ProductAvailabilityPanel({
                             )}
                           </button>
                         </div>
+
+                        {added && (
+                          <button
+                            type="button"
+                            onClick={() => router.push("/checkout")}
+                            className="mt-2 flex w-full items-center justify-center rounded-lg bg-surface-subtle px-4 py-2.5 text-sm font-semibold text-text-body transition-colors hover:bg-surface-muted"
+                          >
+                            Go to checkout
+                          </button>
+                        )}
                       </div>
                     )}
                   </article>

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { SMARTTRIPAI_LOGO_DATA_URI as GETYOURGUIDE_LOGO_DATA_URI } from "@/components/branding/logo";
+import { formatUtcDateTime } from "@/lib/format/date";
 
 type AdminTab = "users" | "orders" | "itineraries" | "feedback";
 type AdminNav = "overview" | AdminTab | "settings";
@@ -947,7 +948,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                     id: item.id,
                     title: item.id,
                     subtitle: item.userId,
-                    meta: `${item.status} • ${new Date(item.updatedAt).toLocaleString()}`,
+                    meta: `${item.status} • ${formatUtcDateTime(item.updatedAt)}`,
                     actions: (
                       <>
                         <ActionButton
@@ -1154,7 +1155,7 @@ export default function AdminPanelClient(props: AdminPanelClientProps) {
                       <span key={`${item.id}-id`} className="font-mono text-xs">{item.id}</span>,
                       <span key={`${item.id}-uid`} className="font-mono text-xs">{item.userId}</span>,
                       item.status,
-                      new Date(item.updatedAt).toLocaleString(),
+                      formatUtcDateTime(item.updatedAt),
                       <div key={item.id} className="flex gap-2">
                         <ActionButton
                           label="Cycle"

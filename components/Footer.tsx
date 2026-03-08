@@ -21,7 +21,7 @@ export default function Footer() {
                         unoptimized
                      />
                   </Link>
-                  <p className="text-text-muted text-xs max-w-56">Discover Turkey's best tours, experiences, and attractions.</p>
+                  <p className="text-text-muted text-xs max-w-56">Discover Turkey&apos;s best tours, experiences, and attractions.</p>
                </div>
 
                <div className="flex gap-12">

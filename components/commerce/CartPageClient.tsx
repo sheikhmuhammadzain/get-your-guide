@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -52,23 +52,30 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+function subscribeToTodayLabel(_callback: () => void) {
+  void _callback;
+  return () => {};
+}
+
+function getTodayLabelSnapshot() {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function CartPageClient() {
-  const { items, removeItem } = useCartState();
+  const { items, removeItem, clearCart } = useCartState();
   const { preferences } = useAppPreferences();
   const countdown = useCountdown(30 * 60);
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
-  const [todayLabel, setTodayLabel] = useState("");
-
-  useEffect(() => {
-    setTodayLabel(
-      new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
-    );
-  }, []);
+  const todayLabel = useSyncExternalStore(
+    subscribeToTodayLabel,
+    getTodayLabelSnapshot,
+    () => "Today",
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -326,6 +333,14 @@ export default function CartPageClient() {
             >
               Go to checkout
             </Link>
+
+            <button
+              type="button"
+              onClick={clearCart}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-border-strong py-3 text-sm font-semibold text-text-body transition-colors hover:bg-surface-subtle"
+            >
+              Cancel cart
+            </button>
 
             {/* Payment badges */}
             <div className="mt-3 flex flex-wrap gap-1.5">

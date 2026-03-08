@@ -28,6 +28,30 @@ interface WishlistResponse {
   count: number;
 }
 
+function Chip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+        active
+          ? "border-brand bg-brand text-white"
+          : "border-border-default bg-surface-base text-text-body hover:border-brand hover:text-brand"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function ProductsPageClient({
   initialCity,
   initialCategory,
@@ -44,9 +68,9 @@ export default function ProductsPageClient({
   const [sortBy, setSortBy] = useState<SortKey>("recommended");
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
-  /* ─── Load wishlist ── */
   useEffect(() => {
     let cancelled = false;
+
     async function load() {
       try {
         const res = await fetch("/api/v1/wishlist", { cache: "no-store" });
@@ -60,10 +84,15 @@ export default function ProductsPageClient({
             }),
           );
         }
-      } catch { /* non-blocking */ }
+      } catch {
+        // non-blocking
+      }
     }
+
     void load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const wishlistSet = useMemo(() => new Set(wishlistIds), [wishlistIds]);
@@ -75,7 +104,10 @@ export default function ProductsPageClient({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ productId }),
       });
-      if (res.status === 401) { window.location.href = "/auth/signin"; return; }
+      if (res.status === 401) {
+        window.location.href = "/auth/signin";
+        return;
+      }
       if (!res.ok) return;
       const body = (await res.json()) as WishlistResponse;
       setWishlistIds(body.items ?? []);
@@ -84,10 +116,11 @@ export default function ProductsPageClient({
           detail: { items: body.items ?? [] },
         }),
       );
-    } catch { /* non-blocking */ }
+    } catch {
+      // non-blocking
+    }
   }
 
-  /* ─── Filtered + sorted products ── */
   const filtered = useMemo(() => {
     let list = [...products];
     if (selectedCity) {
@@ -111,39 +144,13 @@ export default function ProductsPageClient({
         list.sort((a, b) => b.rating - a.rating);
         break;
       default:
-        break; // keep original "recommended" order
+        break;
     }
     return list;
   }, [selectedCity, selectedCategory, sortBy]);
 
-  /* ─── Chip helper ── */
-  function Chip({
-    label,
-    active,
-    onClick,
-  }: {
-    label: string;
-    active: boolean;
-    onClick: () => void;
-  }) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-          active
-            ? "border-brand bg-brand text-white"
-            : "border-border-default bg-surface-base text-text-body hover:border-brand hover:text-brand"
-        }`}
-      >
-        {label}
-      </button>
-    );
-  }
-
   return (
     <div>
-      {/* ─── Header ── */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-text-primary">
           All Experiences in Turkey
@@ -153,9 +160,7 @@ export default function ProductsPageClient({
         </p>
       </div>
 
-      {/* ─── Filters ── */}
       <div className="mb-6 space-y-3">
-        {/* City chips */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <Chip
             label="All cities"
@@ -174,7 +179,6 @@ export default function ProductsPageClient({
           ))}
         </div>
 
-        {/* Category chips + sort row */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-text-muted">
@@ -193,7 +197,6 @@ export default function ProductsPageClient({
             ))}
           </div>
 
-          {/* Sort */}
           <div className="relative shrink-0">
             <select
               value={sortBy}
@@ -201,8 +204,8 @@ export default function ProductsPageClient({
               className="h-9 appearance-none rounded-lg border border-border-default bg-surface-base pl-3 pr-8 text-xs font-semibold text-text-body outline-none focus:border-brand"
             >
               <option value="recommended">Recommended</option>
-              <option value="price-asc">Price: Low → High</option>
-              <option value="price-desc">Price: High → Low</option>
+              <option value="price-asc">Price: Low â†’ High</option>
+              <option value="price-desc">Price: High â†’ Low</option>
               <option value="rating">Top Rated</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-subtle" />
@@ -210,7 +213,6 @@ export default function ProductsPageClient({
         </div>
       </div>
 
-      {/* ─── Grid ── */}
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-border-soft bg-surface-subtle p-10 text-center">
           <p className="text-base font-semibold text-text-primary">

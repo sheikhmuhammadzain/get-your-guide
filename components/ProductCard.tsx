@@ -85,7 +85,7 @@ export default function ProductCard({
             ))}
           </div>
           <span className="text-xs font-semibold text-text-body">{product.rating}</span>
-          <span className="text-xs text-text-subtle">({product.reviews.toLocaleString()})</span>
+          <span className="text-xs text-text-subtle">({product.reviews.toLocaleString("en-US")})</span>
         </div>
 
         {/* Price + booked row */}
@@ -106,4 +106,3 @@ export default function ProductCard({
     </Link>
   );
 }
-

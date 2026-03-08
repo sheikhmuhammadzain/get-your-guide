@@ -103,7 +103,7 @@ export default async function ProductDetailPage({
                   <Star className="h-3.5 w-3.5 fill-current" />
                   {product.rating}
                   <span className="font-normal text-text-muted">
-                    ({product.reviews.toLocaleString()} reviews)
+                    ({product.reviews.toLocaleString("en-US")} reviews)
                   </span>
                 </span>
               </div>
@@ -197,7 +197,7 @@ export default async function ProductDetailPage({
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                     <span className="text-sm font-bold text-text-primary">{product.rating}</span>
-                    <span className="ml-1 text-xs text-text-muted">({product.reviews.toLocaleString()})</span>
+                    <span className="ml-1 text-xs text-text-muted">({product.reviews.toLocaleString("en-US")})</span>
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">

@@ -356,7 +356,7 @@ export default function TurkeyMap() {
                   : 'Your location detected'}
               </p>
               <p>
-                {nearestCity.distanceKm.toLocaleString()} km from {nearestCity.marker.city} (nearest)
+                {nearestCity.distanceKm.toLocaleString("en-US")} km from {nearestCity.marker.city} (nearest)
               </p>
             </div>
           </div>
