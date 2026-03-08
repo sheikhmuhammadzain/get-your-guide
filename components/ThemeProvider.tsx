@@ -41,7 +41,7 @@ function getThemeSnapshot(): Theme {
     return "light";
 }
 
-function subscribeToTheme(callback: () => void) {
+function subscribeToTheme(callback: () => void): () => void {
     if (typeof window === "undefined") {
         return () => {};
     }
@@ -56,7 +56,11 @@ function subscribeToTheme(callback: () => void) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, () => "light");
+    const theme = useSyncExternalStore<Theme>(
+        subscribeToTheme,
+        getThemeSnapshot,
+        (): Theme => "light"
+    );
 
     /* Apply class to <html> whenever theme changes */
     useEffect(() => {
@@ -90,6 +94,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function useTheme() {
+export function useTheme(): ThemeContextValue {
     return useContext(ThemeContext);
 }
