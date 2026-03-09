@@ -357,6 +357,195 @@ export const agentTools: ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "get_weather",
+      description:
+        "Get current weather conditions and forecast for a Turkish city. Use this when the user asks about weather, what to pack, or best time to visit.",
+      parameters: {
+        type: "object",
+        properties: {
+          city: {
+            type: "string",
+            description: "The city name to get weather for (e.g. 'Istanbul', 'Cappadocia', 'Antalya').",
+          },
+        },
+        required: ["city"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_transport_info",
+      description:
+        "Get transport guidance and options between Turkish cities or within a city, including buses, flights, and car travel.",
+      parameters: {
+        type: "object",
+        properties: {
+          from: {
+            type: "string",
+            description: "Origin city or location (e.g. 'Istanbul').",
+          },
+          to: {
+            type: "string",
+            description: "Destination city or location (e.g. 'Cappadocia').",
+          },
+          mode: {
+            type: "string",
+            enum: ["car", "bus", "flight"],
+            description: "Transport mode. Default: 'bus'.",
+          },
+        },
+        required: ["from", "to"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_wishlist",
+      description:
+        "Retrieve the current user's wishlist of saved tours and products. Requires the user to be signed in.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "toggle_wishlist",
+      description:
+        "Add or remove a tour product from the user's wishlist. Requires the user to be signed in. Calling this toggles the current state.",
+      parameters: {
+        type: "object",
+        properties: {
+          product_id: {
+            type: "string",
+            description: "The product ID to add or remove from the wishlist.",
+          },
+        },
+        required: ["product_id"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_user_profile",
+      description:
+        "Retrieve the signed-in user's profile information including name, email, and verification status. Requires the user to be signed in.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_user_preferences",
+      description:
+        "Retrieve the signed-in user's saved travel preferences: preferred budget level, cities, and interests. Requires the user to be signed in.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_user_preferences",
+      description:
+        "Update the signed-in user's travel preferences. Only provide the fields that should change. Requires the user to be signed in.",
+      parameters: {
+        type: "object",
+        properties: {
+          preferred_budget: {
+            type: "string",
+            enum: ["budget", "standard", "luxury"],
+            description: "The user's preferred budget level.",
+          },
+          preferred_cities: {
+            type: "array",
+            items: { type: "string" },
+            description: "List of preferred destination cities.",
+          },
+          preferred_interests: {
+            type: "array",
+            items: { type: "string" },
+            description: "List of interest tags (e.g. ['culture', 'food', 'nature']).",
+          },
+        },
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_orders",
+      description:
+        "List the signed-in user's past booking orders, including order status, total, and items. Requires the user to be signed in.",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Number of orders to return (1-20, default 10).",
+          },
+          cursor: {
+            type: "string",
+            description: "Pagination cursor from a previous list_orders call.",
+          },
+        },
+        required: [],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "submit_feedback",
+      description:
+        "Submit user feedback or a rating about the platform, assistant, itinerary quality, or UX. Use this when the user wants to give feedback.",
+      parameters: {
+        type: "object",
+        properties: {
+          category: {
+            type: "string",
+            enum: ["ux", "itinerary", "assistant", "realtime", "other"],
+            description: "Category of feedback.",
+          },
+          message: {
+            type: "string",
+            description: "The feedback message text.",
+          },
+          rating: {
+            type: "number",
+            description: "Optional rating from 1 (worst) to 5 (best).",
+          },
+        },
+        required: ["category", "message"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 export const TOOL_LABELS: Record<string, string> = {
@@ -373,4 +562,13 @@ export const TOOL_LABELS: Record<string, string> = {
   delete_itinerary: "Deleting itinerary...",
   get_exchange_rate: "Checking exchange rate...",
   get_turkey_travel_info: "Looking up travel info...",
+  get_weather: "Checking weather...",
+  get_transport_info: "Looking up transport options...",
+  get_wishlist: "Loading your wishlist...",
+  toggle_wishlist: "Updating wishlist...",
+  get_user_profile: "Fetching your profile...",
+  get_user_preferences: "Loading your preferences...",
+  update_user_preferences: "Saving your preferences...",
+  list_orders: "Loading your orders...",
+  submit_feedback: "Submitting feedback...",
 };

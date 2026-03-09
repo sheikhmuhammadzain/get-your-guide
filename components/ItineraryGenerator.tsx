@@ -39,10 +39,14 @@ interface WeatherData {
   city: string;
   temperatureC: number;
   description: string;
+  icon?: string;
+  humidity?: number;
+  windKph?: number;
   hourly?: Array<{
     time: string;
     temperatureC: number;
     description: string;
+    icon?: string;
   }>;
 }
 
@@ -509,82 +513,82 @@ export default function ItineraryGenerator() {
         {/* Row 3 — Live Data Cards */}
         <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-1">
-          {/* Weather Card */}
-          <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
-            <div className="flex items-start gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-subtle">
-                <CloudSun className="h-5 w-5 text-sky-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                    Weather
-                  </p>
-                  {!realtimeLoading && weather && (
-                    <span className="flex items-center gap-1 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold text-emerald-500">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Live
-                    </span>
-                  )}
+            {/* Weather Card */}
+            <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-subtle">
+                  <CloudSun className="h-5 w-5 text-sky-500" />
                 </div>
-                <p className="mt-1 text-sm font-bold text-text-primary truncate">
-                  {realtimeLoading ? (
-                    <span className="inline-block h-4 w-28 animate-pulse rounded bg-surface-subtle" />
-                  ) : weather ? (
-                    `${Math.round(weather.temperatureC)}°C — ${weather.description}`
-                  ) : (
-                    <span className="text-text-subtle">Unavailable</span>
-                  )}
-                </p>
-                <p className="mt-0.5 text-[11px] text-text-muted">
-                  {weather?.city ?? WEATHER_CITY_MAP[primaryDestination]}
-                  {weather?.hourly?.[0] && (
-                    <span className="ml-1.5 text-text-subtle">
-                      · Next {Math.round(weather.hourly[0].temperatureC)}°C at{' '}
-                      {new Date(weather.hourly[0].time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  )}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                      Weather
+                    </p>
+                    {!realtimeLoading && weather && (
+                      <span className="flex items-center gap-1 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold text-emerald-500">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Live
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm font-bold text-text-primary truncate">
+                    {realtimeLoading ? (
+                      <span className="inline-block h-4 w-28 animate-pulse rounded bg-surface-subtle" />
+                    ) : weather ? (
+                      `${Math.round(weather.temperatureC)}°C — ${weather.description}`
+                    ) : (
+                      <span className="text-text-subtle">Unavailable</span>
+                    )}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-text-muted">
+                    {weather?.city ?? WEATHER_CITY_MAP[primaryDestination]}
+                    {weather?.hourly?.[0] && (
+                      <span className="ml-1.5 text-text-subtle">
+                        · Next {Math.round(weather.hourly[0].temperatureC)}°C at{' '}
+                        {new Date(weather.hourly[0].time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Currency Card */}
-          <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
-            <div className="flex items-start gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-subtle">
-                <Banknote className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                    Exchange Rate
-                  </p>
-                  {!realtimeLoading && currency && (
-                    <span className="flex items-center gap-1 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold text-emerald-500">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Live
-                    </span>
-                  )}
+            {/* Currency Card */}
+            <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface-base p-4">
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-subtle">
+                  <Banknote className="h-5 w-5 text-emerald-500" />
                 </div>
-                <p className="mt-1 text-sm font-bold text-text-primary">
-                  {realtimeLoading ? (
-                    <span className="inline-block h-4 w-32 animate-pulse rounded bg-surface-subtle" />
-                  ) : currency ? (
-                    <>
-                      1 {currency.base} = <span className="text-emerald-600">{currency.rate.toFixed(2)}</span> {currency.target}
-                    </>
-                  ) : (
-                    <span className="text-text-subtle">Unavailable</span>
-                  )}
-                </p>
-                <p className="mt-0.5 text-[11px] text-text-muted">
-                  {userCurrency} → TRY
-                  <span className="ml-1.5 text-text-subtle">· Updated in real-time</span>
-                </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                      Exchange Rate
+                    </p>
+                    {!realtimeLoading && currency && (
+                      <span className="flex items-center gap-1 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold text-emerald-500">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Live
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm font-bold text-text-primary">
+                    {realtimeLoading ? (
+                      <span className="inline-block h-4 w-32 animate-pulse rounded bg-surface-subtle" />
+                    ) : currency ? (
+                      <>
+                        1 {currency.base} = <span className="text-emerald-600">{currency.rate.toFixed(2)}</span> {currency.target}
+                      </>
+                    ) : (
+                      <span className="text-text-subtle">Unavailable</span>
+                    )}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-text-muted">
+                    {userCurrency} → TRY
+                    <span className="ml-1.5 text-text-subtle">· Updated in real-time</span>
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
           </div>
           <TransportMapEmbed
@@ -646,7 +650,11 @@ export default function ItineraryGenerator() {
                       </span>
                     ) : null}
                   </div>
-                  <h3 className="mt-3 text-xl font-bold tracking-tight text-text-primary md:text-2xl">{result.title}</h3>
+                  <h3 className="mt-3 text-xl font-bold tracking-tight text-text-primary md:text-2xl">
+                    {result.title.replace(/^(.+?)(\s+\d+-day\s+.*)$/i, (_, cities, suffix) =>
+                      cities.split(' -> ').map((c: string) => c.charAt(0).toUpperCase() + c.slice(1)).join(' -> ') + suffix
+                    )}
+                  </h3>
                   <p className="mt-2 text-sm text-text-muted">
                     A structured route across {result.cityOrder.map((city) => formatCityLabel(city)).join(' -> ')} with live transport context and budget-aware activity grouping.
                   </p>

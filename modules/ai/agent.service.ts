@@ -5,7 +5,11 @@ import { getOpenAIClient } from "@/modules/ai/openai-client";
 import { agentTools, TOOL_LABELS } from "@/modules/ai/tools/definitions";
 import { executeTool, getToolResultSummary, type ToolContext } from "@/modules/ai/tools/executor";
 
-const MAX_TOOL_ITERATIONS = 5;
+const MAX_TOOL_ITERATIONS = 4;
+// Keep history short to reduce prompt tokens → lower latency
+const MAX_HISTORY_TURNS = 16;
+// Compact tool result payloads to avoid blowing the context window
+const MAX_TOOL_RESULT_CHARS = 4000;
 
 export interface AgentStreamCallbacks {
   onToolCall: (name: string, label: string, args: unknown) => void | Promise<void>;
@@ -14,36 +18,55 @@ export interface AgentStreamCallbacks {
 }
 
 function getAgentModel(): string | null {
-  return (
-    process.env.AGENT_MODEL ||
-    process.env.OPENROUTER_MODEL ||
-    null
-  );
+  return process.env.AGENT_MODEL || process.env.OPENROUTER_MODEL || null;
 }
 
 function buildSystemPrompt(ctx: ToolContext): string {
   const today = new Date().toISOString().split("T")[0];
   const signedIn = Boolean(ctx.userId);
-
   return [
     "You are a professional Turkey travel assistant for Smart Trip AI.",
-    `Today's date: ${today}.`,
-    "Always use tools to fetch real data — never guess product IDs, prices, or availability.",
-    "For tour/activity recommendations: call search_products.",
-    "For landmarks and attractions: call search_attractions or get_attraction_details.",
-    "For a day-by-day trip plan: call generate_itinerary, then offer to save it.",
-    "For currency conversion questions: call get_exchange_rate.",
-    "For travel tips, city guides, food, transport, safety advice: call get_turkey_travel_info.",
+    `Today: ${today}.`,
+    "Always call tools for real data — never invent product IDs, prices, or availability.",
+
+    // Product & discovery
+    "Tours/activities → search_products (can filter by location, category, max_price).",
+    "Product details → get_product_details. Slot availability → check_product_availability.",
+
+    // Attractions
+    "Landmarks/museums/sites → search_attractions or get_attraction_details (by slug).",
+
+    // Itinerary
+    "Day-by-day plan → generate_itinerary, then offer to save_itinerary.",
     signedIn
-      ? "The user is signed in — all itinerary CRUD tools are available."
-      : "The user is NOT signed in — itinerary save/list/get/update/delete tools will return an auth error.",
-    "Be helpful, concise, and use markdown formatting. After receiving tool results, synthesize them into a clear friendly answer.",
+      ? "User is signed in — save_itinerary, list_itineraries, get_itinerary, update_itinerary, delete_itinerary are all available."
+      : "User is NOT signed in — itinerary CRUD (save/list/get/update/delete) tools will return an auth error.",
+
+    // Info
+    "Currency conversion → get_exchange_rate. Travel tips / city guides / food / safety → get_turkey_travel_info.",
+    "Current weather in a city → get_weather. How to travel between cities → get_transport_info.",
+
+    // User account (signed in only)
+    signedIn
+      ? "Wishlist → get_wishlist or toggle_wishlist. User profile → get_user_profile. Preferences → get_user_preferences / update_user_preferences. Past bookings → list_orders. Accept feedback → submit_feedback."
+      : "Wishlist, profile, preferences, orders, and feedback tools require the user to sign in.",
+
+    "Be concise, use markdown. Synthesize tool results into a clear, friendly answer. Never expose raw JSON to the user.",
   ].join(" ");
 }
 
+function truncateToolResult(json: string): string {
+  if (json.length <= MAX_TOOL_RESULT_CHARS) return json;
+  // Truncate and note it was trimmed
+  return json.slice(0, MAX_TOOL_RESULT_CHARS) + '..."(truncated)"}';
+}
+
 /**
- * Runs the tool-calling agentic loop then streams the final response.
- * Tool calls are executed non-streaming; only the final answer is streamed token-by-token.
+ * Latency optimisations vs previous version:
+ * 1. Parallel tool execution — all tools in one LLM response run concurrently
+ * 2. Shorter history window (16 vs 30 turns) → fewer prompt tokens
+ * 3. Lower max_tokens for tool-loop calls (400 — just enough for tool_calls JSON)
+ * 4. Tool result payloads capped at 4 KB to prevent context bloat
  */
 export async function runAgentStream(
   conversationMessages: Array<{ role: "user" | "assistant"; content: string }>,
@@ -60,16 +83,15 @@ export async function runAgentStream(
     return msg;
   }
 
-  // Build full message history (keep last 30 turns)
   const messages: ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(context) },
-    ...conversationMessages.slice(-30).map((m) => ({
+    ...conversationMessages.slice(-MAX_HISTORY_TURNS).map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),
   ];
 
-  // Phase 1: Tool execution loop (non-streaming)
+  // Phase 1: Tool execution loop (non-streaming, parallel tool calls)
   let toolsWereUsed = false;
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
@@ -82,8 +104,8 @@ export async function runAgentStream(
         messages,
         tools: agentTools,
         tool_choice: "auto",
-        temperature: 0.3,
-        max_tokens: 800,
+        temperature: 0.2,
+        max_tokens: 400, // Only need room for tool_call JSON, not prose
         stream: false,
       });
     } catch (error) {
@@ -99,58 +121,53 @@ export async function runAgentStream(
 
     const { finish_reason, message } = choice;
 
-    // No tool calls → stop looping, proceed to streaming final answer
-    if (finish_reason !== "tool_calls" || !message.tool_calls?.length) {
-      break;
-    }
+    if (finish_reason !== "tool_calls" || !message.tool_calls?.length) break;
 
     toolsWereUsed = true;
-
-    // Append assistant message containing tool_calls to history
     messages.push(message as ChatCompletionMessageParam);
 
-    // Execute each requested tool
-    for (const toolCall of message.tool_calls) {
-      if (signal?.aborted) break;
+    // Fire tool_call events and execute ALL tools in this batch concurrently
+    await Promise.all(
+      message.tool_calls.filter((tc) => tc.type === "function").map(async (toolCall) => {
+        if (signal?.aborted) return;
 
-      const toolName = toolCall.function.name;
-      const label = TOOL_LABELS[toolName] ?? `Running ${toolName}...`;
+        const fn = (toolCall as { type: "function"; function: { name: string; arguments: string } }).function;
+        const toolName = fn.name;
+        const label = TOOL_LABELS[toolName] ?? `Running ${toolName}...`;
 
-      let parsedArgs: unknown = {};
-      try {
-        parsedArgs = JSON.parse(toolCall.function.arguments);
-      } catch {
-        // Leave as empty object
-      }
+        let parsedArgs: unknown = {};
+        try {
+          parsedArgs = JSON.parse(fn.arguments);
+        } catch { /* leave as {} */ }
 
-      await callbacks.onToolCall(toolName, label, parsedArgs);
+        await callbacks.onToolCall(toolName, label, parsedArgs);
 
-      const resultJson = await executeTool(toolName, parsedArgs, context);
-      const summary = getToolResultSummary(toolName, resultJson);
+        const rawResult = await executeTool(toolName, parsedArgs, context);
+        const resultJson = truncateToolResult(rawResult);
+        const summary = getToolResultSummary(toolName, resultJson);
 
-      await callbacks.onToolResult(toolName, summary);
+        await callbacks.onToolResult(toolName, summary);
 
-      messages.push({
-        role: "tool",
-        tool_call_id: toolCall.id,
-        content: resultJson,
-      });
-    }
+        messages.push({
+          role: "tool",
+          tool_call_id: toolCall.id,
+          content: resultJson,
+        });
+      }),
+    );
   }
 
   if (signal?.aborted) return "";
 
-  // Phase 2: Stream the final answer (no tools allowed so it just generates text)
+  // Phase 2: Stream the final answer
   let fullReply = "";
   try {
     const streamResponse = await client.chat.completions.create({
       model,
       messages,
-      // Disable tools so the model writes a final answer instead of calling more tools
-      tool_choice: toolsWereUsed ? "none" : "auto",
-      tools: toolsWereUsed ? undefined : agentTools,
+      tool_choice: "none", // Force text answer, no more tool calls
       temperature: 0.3,
-      max_tokens: 1000,
+      max_tokens: 900,
       stream: true,
     });
 
@@ -163,36 +180,34 @@ export async function runAgentStream(
       }
     }
   } catch (error) {
-    logger.warn("Agent final streaming failed", {
+    logger.warn("Agent final streaming failed, falling back to non-streaming", {
       error: error instanceof Error ? error.message : "unknown",
     });
-    // Fallback: one non-streaming call, chunk the output
     try {
-      const fallbackResponse = await client.chat.completions.create({
+      const fallback = await client.chat.completions.create({
         model,
         messages,
         tool_choice: "none",
         temperature: 0.3,
-        max_tokens: 1000,
+        max_tokens: 900,
         stream: false,
       });
-      fullReply = fallbackResponse.choices[0]?.message?.content ?? "";
-      const chunks = fullReply.match(/.{1,20}(\s|$)/g) ?? [fullReply];
-      for (const chunk of chunks) {
+      fullReply = fallback.choices[0]?.message?.content ?? "";
+      // Emit in small chunks to keep SSE alive
+      for (const chunk of (fullReply.match(/.{1,30}(\s|$)/g) ?? [fullReply])) {
         if (signal?.aborted) break;
         await callbacks.onToken(chunk);
-        await new Promise<void>((resolve) => setTimeout(resolve, 12));
+        await new Promise<void>((r) => setTimeout(r, 10));
       }
-    } catch (innerError) {
-      logger.warn("Agent fallback call also failed", {
-        error: innerError instanceof Error ? innerError.message : "unknown",
+    } catch (inner) {
+      logger.warn("Agent fallback also failed", {
+        error: inner instanceof Error ? inner.message : "unknown",
       });
     }
   }
 
   if (!fullReply.trim()) {
-    const fallback =
-      "I was unable to generate a response. Please try rephrasing your question.";
+    const fallback = "I was unable to generate a response. Please try rephrasing your question.";
     await callbacks.onToken(fallback);
     return fallback;
   }

@@ -1,5 +1,8 @@
 import { getServerEnv } from "@/lib/env/server";
-import { getCachedPayload, setCachedPayload } from "@/modules/realtime/cache.repository";
+import {
+  getCachedPayload,
+  setCachedPayload,
+} from "@/modules/realtime/cache.repository";
 
 const WEATHER_TTL_MS = 1000 * 60 * 30;
 
@@ -7,12 +10,14 @@ interface HourlyForecast {
   time: string;
   temperatureC: number;
   description: string;
+  icon?: string;
 }
 
 interface WeatherResponse {
   city: string;
   temperatureC: number;
   description: string;
+  icon?: string;
   humidity: number;
   windKph: number;
   observedAt: string;
@@ -33,7 +38,10 @@ function createFallbackHourly(hours: number) {
   return entries;
 }
 
-export async function getWeather(city: string, hours = 6): Promise<WeatherResponse> {
+export async function getWeather(
+  city: string,
+  hours = 6,
+): Promise<WeatherResponse> {
   const normalizedCity = city.trim();
   const normalizedHours = Math.max(1, Math.min(24, hours));
   const cacheKey = `weather:${normalizedCity.toLowerCase()}:${normalizedHours}`;
@@ -66,7 +74,9 @@ export async function getWeather(city: string, hours = 6): Promise<WeatherRespon
   currentUrl.searchParams.set("units", "metric");
   currentUrl.searchParams.set("appid", OPENWEATHER_API_KEY);
 
-  const forecastUrl = new URL("https://api.openweathermap.org/data/2.5/forecast");
+  const forecastUrl = new URL(
+    "https://api.openweathermap.org/data/2.5/forecast",
+  );
   forecastUrl.searchParams.set("q", normalizedCity);
   forecastUrl.searchParams.set("units", "metric");
   forecastUrl.searchParams.set("appid", OPENWEATHER_API_KEY);
@@ -83,7 +93,7 @@ export async function getWeather(city: string, hours = 6): Promise<WeatherRespon
   }
 
   const currentPayload = (await currentResponse.json()) as {
-    weather?: { description: string }[];
+    weather?: { description: string; icon: string }[];
     main?: { temp: number; humidity: number };
     wind?: { speed: number };
     dt?: number;
@@ -94,20 +104,26 @@ export async function getWeather(city: string, hours = 6): Promise<WeatherRespon
     list?: Array<{
       dt?: number;
       main?: { temp: number };
-      weather?: { description: string }[];
+      weather?: { description: string; icon: string }[];
     }>;
   };
 
-  const hourly = (forecastPayload.list ?? []).slice(0, normalizedHours).map((item) => ({
-    time: item.dt ? new Date(item.dt * 1000).toISOString() : new Date().toISOString(),
-    temperatureC: item.main?.temp ?? currentPayload.main?.temp ?? 0,
-    description: item.weather?.[0]?.description ?? "unknown",
-  }));
+  const hourly = (forecastPayload.list ?? [])
+    .slice(0, normalizedHours)
+    .map((item) => ({
+      time: item.dt
+        ? new Date(item.dt * 1000).toISOString()
+        : new Date().toISOString(),
+      temperatureC: item.main?.temp ?? currentPayload.main?.temp ?? 0,
+      description: item.weather?.[0]?.description ?? "unknown",
+      icon: item.weather?.[0]?.icon,
+    }));
 
   const normalized: WeatherResponse = {
     city: currentPayload.name ?? normalizedCity,
     temperatureC: currentPayload.main?.temp ?? 0,
     description: currentPayload.weather?.[0]?.description ?? "unknown",
+    icon: currentPayload.weather?.[0]?.icon,
     humidity: currentPayload.main?.humidity ?? 0,
     windKph: Math.round((currentPayload.wind?.speed ?? 0) * 3.6),
     observedAt: currentPayload.dt

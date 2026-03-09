@@ -33,6 +33,25 @@ import {
   type GetExchangeRateArgs,
   type GetTurkeyTravelInfoArgs,
 } from "@/modules/ai/tools/info-tools";
+import {
+  getWeatherTool,
+  getTransportInfoTool,
+  type GetWeatherArgs,
+  type GetTransportInfoArgs,
+} from "@/modules/ai/tools/realtime-tools";
+import {
+  getWishlist,
+  toggleWishlist,
+  getUserProfile,
+  getUserPreferences,
+  updateUserPreferences,
+  listOrders,
+  submitFeedback,
+  type ToggleWishlistArgs,
+  type UpdateUserPreferencesArgs,
+  type ListOrdersArgs,
+  type SubmitFeedbackArgs,
+} from "@/modules/ai/tools/user-tools";
 
 export interface ToolContext {
   userId?: string;
@@ -40,62 +59,99 @@ export interface ToolContext {
 }
 
 export async function executeTool(name: string, rawArgs: unknown, ctx: ToolContext): Promise<string> {
-  const args = rawArgs as Record<string, unknown>;
+  // Cast via unknown to avoid TS overlap errors — args come from LLM JSON, types are enforced at runtime by each handler
+  const a = rawArgs as unknown;
 
   try {
     let result: unknown;
 
     switch (name) {
       case "search_products":
-        result = await searchProducts(args as SearchProductsArgs);
+        result = await searchProducts(a as SearchProductsArgs);
         break;
 
       case "get_product_details":
-        result = await getProductDetails(args as GetProductDetailsArgs);
+        result = await getProductDetails(a as GetProductDetailsArgs);
         break;
 
       case "check_product_availability":
-        result = await checkProductAvailability(args as CheckProductAvailabilityArgs);
+        result = await checkProductAvailability(a as CheckProductAvailabilityArgs);
         break;
 
       case "search_attractions":
-        result = await searchAttractions(args as SearchAttractionsArgs);
+        result = await searchAttractions(a as SearchAttractionsArgs);
         break;
 
       case "get_attraction_details":
-        result = await getAttractionDetails(args as GetAttractionDetailsArgs);
+        result = await getAttractionDetails(a as GetAttractionDetailsArgs);
         break;
 
       case "generate_itinerary":
-        result = await generateItinerary(args as GenerateItineraryArgs);
+        result = await generateItinerary(a as GenerateItineraryArgs);
         break;
 
       case "save_itinerary":
-        result = await saveItinerary(args as SaveItineraryArgs, ctx.userId);
+        result = await saveItinerary(a as SaveItineraryArgs, ctx.userId);
         break;
 
       case "list_itineraries":
-        result = await listItineraries(args as ListItinerariesArgs, ctx.userId);
+        result = await listItineraries(a as ListItinerariesArgs, ctx.userId);
         break;
 
       case "get_itinerary":
-        result = await getItinerary(args as GetItineraryArgs, ctx.userId);
+        result = await getItinerary(a as GetItineraryArgs, ctx.userId);
         break;
 
       case "update_itinerary":
-        result = await updateItinerary(args as UpdateItineraryArgs, ctx.userId);
+        result = await updateItinerary(a as UpdateItineraryArgs, ctx.userId);
         break;
 
       case "delete_itinerary":
-        result = await deleteItinerary(args as DeleteItineraryArgs, ctx.userId);
+        result = await deleteItinerary(a as DeleteItineraryArgs, ctx.userId);
         break;
 
       case "get_exchange_rate":
-        result = await getExchangeRate(args as GetExchangeRateArgs);
+        result = await getExchangeRate(a as GetExchangeRateArgs);
         break;
 
       case "get_turkey_travel_info":
-        result = await getTurkeyTravelInfo(args as GetTurkeyTravelInfoArgs);
+        result = await getTurkeyTravelInfo(a as GetTurkeyTravelInfoArgs);
+        break;
+
+      case "get_weather":
+        result = await getWeatherTool(a as GetWeatherArgs);
+        break;
+
+      case "get_transport_info":
+        result = await getTransportInfoTool(a as GetTransportInfoArgs);
+        break;
+
+      case "get_wishlist":
+        result = await getWishlist(ctx.userId);
+        break;
+
+      case "toggle_wishlist":
+        result = await toggleWishlist(a as ToggleWishlistArgs, ctx.userId);
+        break;
+
+      case "get_user_profile":
+        result = await getUserProfile(ctx.userId);
+        break;
+
+      case "get_user_preferences":
+        result = await getUserPreferences(ctx.userId);
+        break;
+
+      case "update_user_preferences":
+        result = await updateUserPreferences(a as UpdateUserPreferencesArgs, ctx.userId);
+        break;
+
+      case "list_orders":
+        result = await listOrders(a as ListOrdersArgs, ctx.userId);
+        break;
+
+      case "submit_feedback":
+        result = await submitFeedback(a as SubmitFeedbackArgs, ctx.userId);
         break;
 
       default:
@@ -106,7 +162,7 @@ export async function executeTool(name: string, rawArgs: unknown, ctx: ToolConte
   } catch (error) {
     logger.warn(`Tool "${name}" threw an unexpected error`, {
       error: error instanceof Error ? error.message : "unknown",
-      args,
+      rawArgs,
     });
     return JSON.stringify({
       error: `Tool "${name}" encountered an error: ${error instanceof Error ? error.message : "unknown error"}`,
@@ -155,6 +211,28 @@ export function getToolResultSummary(name: string, resultJson: string): string {
         return `Rate: ${(data.example as string) ?? ""}`;
       case "get_turkey_travel_info":
         return `Info on ${(data.topic as string) ?? "travel"}`;
+      case "get_weather":
+        return `Weather in ${(data.city as string) ?? "city"} retrieved`;
+      case "get_transport_info":
+        return `Transport options found`;
+      case "get_wishlist": {
+        const count = (data.count as number) ?? 0;
+        return `${count} item${count !== 1 ? "s" : ""} in wishlist`;
+      }
+      case "toggle_wishlist":
+        return (data.isWishlisted as boolean) ? "Added to wishlist" : "Removed from wishlist";
+      case "get_user_profile":
+        return `Profile loaded for ${(data.name as string) ?? "user"}`;
+      case "get_user_preferences":
+        return "Preferences loaded";
+      case "update_user_preferences":
+        return "Preferences updated";
+      case "list_orders": {
+        const count = (data.count as number) ?? 0;
+        return `${count} order${count !== 1 ? "s" : ""} found`;
+      }
+      case "submit_feedback":
+        return "Feedback submitted";
       default:
         return "Done";
     }

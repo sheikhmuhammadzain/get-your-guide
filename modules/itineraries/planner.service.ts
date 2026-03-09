@@ -1,4 +1,8 @@
-import type { GeneratedItinerary, ItineraryRequest, TravelPace } from "@/types/travel";
+import type {
+  GeneratedItinerary,
+  ItineraryRequest,
+  TravelPace,
+} from "@/types/travel";
 import { getAttractionsForPlanning } from "@/modules/attractions/attraction.repository";
 
 function daysBetween(startDate: string, endDate: string) {
@@ -21,11 +25,16 @@ function budgetMultiplier(level: ItineraryRequest["budgetLevel"]) {
   return 1;
 }
 
-export async function generateDeterministicItinerary(request: ItineraryRequest): Promise<GeneratedItinerary> {
+export async function generateDeterministicItinerary(
+  request: ItineraryRequest,
+): Promise<GeneratedItinerary> {
   const totalDays = daysBetween(request.startDate, request.endDate);
   const perDay = activitiesPerDay(request.pace);
 
-  const byCity = await getAttractionsForPlanning(request.destinations, request.interests);
+  const byCity = await getAttractionsForPlanning(
+    request.destinations,
+    request.interests,
+  );
 
   const days: GeneratedItinerary["days"] = [];
   let totalEstimatedCostTRY = 0;
@@ -41,7 +50,9 @@ export async function generateDeterministicItinerary(request: ItineraryRequest):
       const minPrice = attraction.ticketPriceRange?.min ?? 300;
       const maxPrice = attraction.ticketPriceRange?.max ?? 700;
       const baseCost = Math.round((minPrice + maxPrice) / 2);
-      const adjustedCost = Math.round(baseCost * budgetMultiplier(request.budgetLevel) * request.travelers);
+      const adjustedCost = Math.round(
+        baseCost * budgetMultiplier(request.budgetLevel) * request.travelers,
+      );
 
       totalEstimatedCostTRY += adjustedCost;
 
@@ -50,7 +61,10 @@ export async function generateDeterministicItinerary(request: ItineraryRequest):
         startTime,
         endTime,
         costEstimateTRY: adjustedCost,
-        transportHint: idx === 0 ? "Start early to avoid crowds" : "Use local taxi or tram for transfer",
+        transportHint:
+          idx === 0
+            ? "Start early to avoid crowds"
+            : "Use local taxi or tram for transfer",
       };
     });
 
@@ -66,7 +80,7 @@ export async function generateDeterministicItinerary(request: ItineraryRequest):
   }
 
   return {
-    title: `${request.destinations.join(" -> ")} ${totalDays}-day AI itinerary`,
+    title: `${request.destinations.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(" -> ")} ${totalDays}-day AI itinerary`,
     cityOrder: request.destinations,
     days,
     totalEstimatedCostTRY,
