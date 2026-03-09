@@ -112,6 +112,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="canonical" href="https://smarttripai.com" />
+        <link rel="preload" href="/chabot.png" as="image" />
         <meta name="theme-color" content={BRAND_HEX} />
         <script
           dangerouslySetInnerHTML={{

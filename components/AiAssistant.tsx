@@ -408,7 +408,7 @@ export default function AiAssistant() {
           </div>
         ) : (
           <>
-            <Image src="/chabot.png" alt="AI Assistant" width={92} height={92} className="filter drop-shadow-xl" />
+            <Image src="/chabot.png" alt="AI Assistant" width={92} height={92} className="filter drop-shadow-xl" priority />
 
           </>
         )}
@@ -421,8 +421,8 @@ function ToolChip({ status }: { status: ToolStatus }) {
   return (
     <div
       className={`inline-flex items-center gap-2 self-start rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-300 ${status.done
-          ? "bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700"
-          : "bg-brand text-white border border-brand/80 shadow-sm shadow-brand/30"
+        ? "bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700"
+        : "bg-brand text-white border border-brand/80 shadow-sm shadow-brand/30"
         }`}
     >
       {status.done
