@@ -9,6 +9,7 @@ const envSchema = z.object({
   OPENAI_MODEL: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),
   OPENROUTER_MODEL: z.string().optional(),
+  AGENT_MODEL: z.string().optional(),
   OPENROUTER_SITE_URL: z.string().url().optional(),
   OPENROUTER_APP_NAME: z.string().optional(),
   OPENWEATHER_API_KEY: z.string().optional(),

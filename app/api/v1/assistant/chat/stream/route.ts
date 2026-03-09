@@ -11,7 +11,7 @@ function getClientKey(request: Request) {
   return `chat-stream:${forwardedFor.split(",")[0].trim()}`;
 }
 
-function sseEncode(event: string, data: unknown) {
+function sseEncode(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
@@ -57,13 +57,21 @@ export async function POST(request: Request) {
                 message: body.message,
                 itineraryId: body.itineraryId,
               },
-              async (delta) => {
-                send("token", { delta });
+              {
+                onToolCall(name, label, args) {
+                  send("tool_call", { tool: name, label, args });
+                },
+                onToolResult(name, summary) {
+                  send("tool_result", { tool: name, summary });
+                },
+                async onToken(delta) {
+                  send("token", { delta });
+                },
               },
               { signal: abortController.signal },
             );
 
-            send("done", result);
+            send("done", { sessionId: result.sessionId, reply: result.reply });
           } catch (error) {
             send("error", {
               message: error instanceof Error ? error.message : "Assistant stream failed",
@@ -88,7 +96,9 @@ export async function POST(request: Request) {
       return problemResponse(fromZodError(error, instance));
     }
     if (error instanceof SyntaxError) {
-      return problemResponse(fromUnknownError(new ApiError(400, "INVALID_JSON", "Malformed JSON body"), instance));
+      return problemResponse(
+        fromUnknownError(new ApiError(400, "INVALID_JSON", "Malformed JSON body"), instance),
+      );
     }
     return problemResponse(fromUnknownError(error, instance));
   }

@@ -1,36 +1,21 @@
-﻿"use client";
+"use client";
 
-import { MessageSquare, X, Send, Bot, ChevronDown } from "lucide-react";
+import { MessageSquare, X, Send, Bot, ChevronDown, Loader2, CheckCircle2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import CurrencyAmount from "@/components/CurrencyAmount";
 
 interface ChatMessage {
   id: string;
   role: "assistant" | "user";
   content: string;
-  agent?: {
-    intent: "recommendation" | "booking" | "general";
-    recommendations: Array<{
-      productId: string;
-      title: string;
-      location: string;
-      price: number;
-      currency: string;
-      rating: number;
-      reason: string;
-      url: string;
-    }>;
-    booking: {
-      productId: string;
-      title: string;
-      quantity: number;
-      estimatedTotal: number;
-      currency: string;
-      checkoutUrl: string;
-    } | null;
-  };
+}
+
+interface ToolStatus {
+  tool: string;
+  label: string;
+  summary?: string;
+  done: boolean;
 }
 
 const WELCOME_MESSAGE: ChatMessage = {
@@ -45,6 +30,7 @@ export default function AiAssistant() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [toolStatuses, setToolStatuses] = useState<ToolStatus[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -53,7 +39,7 @@ export default function AiAssistant() {
   useEffect(() => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, isSending]);
+  }, [messages, isSending, toolStatuses]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -122,19 +108,13 @@ export default function AiAssistant() {
     setMessages((prev) => prev.map((item) => (item.id === messageId ? { ...item, content } : item)));
   }
 
-  function patchMessageAgent(messageId: string, agent: ChatMessage["agent"]) {
-    setMessages((prev) => prev.map((item) => (item.id === messageId ? { ...item, agent } : item)));
-  }
-
   function parseSseChunk(chunk: string) {
     let event = "message";
     const dataLines: string[] = [];
 
     for (const line of chunk.split("\n")) {
       const normalizedLine = line.replace(/\r$/, "");
-      if (normalizedLine.startsWith(":")) {
-        continue;
-      }
+      if (normalizedLine.startsWith(":")) continue;
       if (normalizedLine.startsWith("event:")) {
         event = normalizedLine.slice(6).trim();
         continue;
@@ -157,27 +137,21 @@ export default function AiAssistant() {
 
   async function sendMessage() {
     const trimmed = input.trim();
-    if (!trimmed || isSending || !sessionId) {
-      return;
-    }
+    if (!trimmed || isSending || !sessionId) return;
 
     const userMessage: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: trimmed };
     const assistantMessageId = `assistant-${Date.now()}`;
     const assistantPlaceholder: ChatMessage = { id: assistantMessageId, role: "assistant", content: "" };
     setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
+    setToolStatuses([]);
     setInput("");
     setIsSending(true);
 
     try {
       const response = await fetch("/api/v1/assistant/chat/stream", {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId,
-          message: trimmed,
-        }),
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sessionId, message: trimmed }),
       });
 
       if (response.status === 401) {
@@ -208,9 +182,32 @@ export default function AiAssistant() {
           if (delimiterIndex === -1) break;
 
           const rawChunk = buffer.slice(0, delimiterIndex);
-          const separatorLength = buffer.startsWith("\r\n\r\n", delimiterIndex) ? 4 : 2;
-          buffer = buffer.slice(delimiterIndex + separatorLength);
+          const sepLen = buffer.slice(delimiterIndex).startsWith("\r\n\r\n") ? 4 : 2;
+          buffer = buffer.slice(delimiterIndex + sepLen);
           const parsed = parseSseChunk(rawChunk);
+
+          if (parsed.event === "tool_call") {
+            try {
+              const payload = JSON.parse(parsed.data) as { tool: string; label: string };
+              setToolStatuses((prev) => [
+                ...prev.filter((s) => s.tool !== payload.tool),
+                { tool: payload.tool, label: payload.label, done: false },
+              ]);
+            } catch { /* ignore */ }
+            continue;
+          }
+
+          if (parsed.event === "tool_result") {
+            try {
+              const payload = JSON.parse(parsed.data) as { tool: string; summary: string };
+              setToolStatuses((prev) =>
+                prev.map((s) =>
+                  s.tool === payload.tool ? { ...s, summary: payload.summary, done: true } : s,
+                ),
+              );
+            } catch { /* ignore */ }
+            continue;
+          }
 
           if (parsed.event === "token") {
             try {
@@ -219,28 +216,19 @@ export default function AiAssistant() {
                 completedReply += payload.delta;
                 appendToMessage(assistantMessageId, payload.delta);
               }
-            } catch {
-              // ignore malformed token payload
-            }
+            } catch { /* ignore */ }
             continue;
           }
 
           if (parsed.event === "done") {
             try {
-              const payload = JSON.parse(parsed.data) as {
-                reply?: string;
-                agent?: ChatMessage["agent"];
-              };
+              const payload = JSON.parse(parsed.data) as { reply?: string };
               if (payload.reply) {
                 completedReply = payload.reply;
                 replaceMessage(assistantMessageId, payload.reply);
               }
-              if (payload.agent) {
-                patchMessageAgent(assistantMessageId, payload.agent);
-              }
-            } catch {
-              // ignore malformed done payload
-            }
+            } catch { /* ignore */ }
+            setToolStatuses([]);
             continue;
           }
 
@@ -251,29 +239,23 @@ export default function AiAssistant() {
             } catch {
               replaceMessage(assistantMessageId, "Assistant stream failed");
             }
+            setToolStatuses([]);
           }
         }
       }
 
-      // Process any trailing event chunk not terminated by double newline.
+      // Process any trailing event not terminated by double newline
       if (buffer.trim()) {
         const parsed = parseSseChunk(buffer);
         if (parsed.event === "done") {
           try {
-            const payload = JSON.parse(parsed.data) as {
-              reply?: string;
-              agent?: ChatMessage["agent"];
-            };
+            const payload = JSON.parse(parsed.data) as { reply?: string };
             if (payload.reply) {
               completedReply = payload.reply;
               replaceMessage(assistantMessageId, payload.reply);
             }
-            if (payload.agent) {
-              patchMessageAgent(assistantMessageId, payload.agent);
-            }
-          } catch {
-            // ignore malformed trailing done payload
-          }
+          } catch { /* ignore */ }
+          setToolStatuses([]);
         }
       }
 
@@ -282,6 +264,7 @@ export default function AiAssistant() {
       }
     } catch {
       replaceMessage(assistantMessageId, "I could not reach the assistant endpoint. Please try again.");
+      setToolStatuses([]);
     } finally {
       setIsSending(false);
     }
@@ -330,7 +313,6 @@ export default function AiAssistant() {
                 key={message.id}
                 className={`flex gap-2.5 ${message.role === "user" ? "flex-row-reverse" : ""}`}
               >
-                {/* Avatar */}
                 {message.role === "assistant" && (
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-brand-soft border border-border-info">
                     <Bot className="h-3.5 w-3.5 text-brand" />
@@ -338,7 +320,6 @@ export default function AiAssistant() {
                 )}
 
                 <div className={`flex flex-col gap-1.5 ${message.role === "user" ? "items-end" : "items-start"} max-w-[82%]`}>
-                  {/* Bubble */}
                   <div
                     className={
                       message.role === "user"
@@ -360,43 +341,20 @@ export default function AiAssistant() {
                       <span>{message.content}</span>
                     )}
                   </div>
-
-                  {/* Product cards */}
-                  {message.role === "assistant" && message.agent?.recommendations && message.agent.recommendations.length > 0 && (
-                    <div className="w-full space-y-1.5 pt-1">
-                      {message.agent.recommendations.slice(0, 3).map((item) => (
-                        <a
-                          key={`${message.id}-${item.productId}`}
-                          href={item.url}
-                          className="group flex items-start gap-2.5 rounded-xl border border-border-default bg-surface-base p-2.5 text-xs transition-colors hover:border-brand/40 hover:bg-surface-brand-subtle"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-text-heading truncate group-hover:text-brand transition-colors">{item.title}</p>
-                            <p className="mt-0.5 text-text-subtle">{item.location} · ⭐ {item.rating.toFixed(1)}</p>
-                          </div>
-                          <p className="shrink-0 font-semibold text-brand">
-                            <CurrencyAmount amount={item.price} baseCurrency={item.currency} />
-                          </p>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Booking CTA */}
-                  {message.role === "assistant" && message.agent?.booking && (
-                    <a
-                      href={message.agent.booking.checkoutUrl}
-                      className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover"
-                    >
-                      Book now ·{" "}
-                      <CurrencyAmount amount={message.agent.booking.estimatedTotal} baseCurrency={message.agent.booking.currency} />
-                    </a>
-                  )}
                 </div>
               </div>
             ))}
 
-            {/* Standalone typing indicator when no placeholder exists yet */}
+            {/* Tool status chips — shown while agent is working */}
+            {toolStatuses.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pl-9">
+                {toolStatuses.map((s) => (
+                  <ToolChip key={s.tool} status={s} />
+                ))}
+              </div>
+            )}
+
+            {/* Standalone typing indicator when no placeholder exists */}
             {isSending && messages[messages.length - 1]?.role === "user" && (
               <div className="flex gap-2.5">
                 <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-brand-soft border border-border-info">
@@ -451,6 +409,25 @@ export default function AiAssistant() {
         )}
       </button>
     </div>
+  );
+}
+
+function ToolChip({ status }: { status: ToolStatus }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition-all ${
+        status.done
+          ? "bg-surface-success-soft text-text-success border border-border-success"
+          : "bg-surface-brand-soft text-brand border border-brand/20"
+      }`}
+    >
+      {status.done ? (
+        <CheckCircle2 className="h-3 w-3 shrink-0" />
+      ) : (
+        <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+      )}
+      {status.done && status.summary ? status.summary : status.label}
+    </span>
   );
 }
 
