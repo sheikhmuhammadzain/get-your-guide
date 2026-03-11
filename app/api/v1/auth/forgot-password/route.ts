@@ -12,36 +12,112 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   const instance = new URL(request.url).pathname;
+  const env = getServerEnv();
+  const isDev = env.NODE_ENV !== "production";
 
   try {
     const { email } = schema.parse(await request.json());
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check if the user exists — but always return success to prevent email enumeration
+    console.log(`[forgot-password] request for: ${normalizedEmail}`);
+
+    // ── Look up user ──────────────────────────────────────────────
     const client = await getMongoClientPromise();
-    const users = client
-      .db()
-      .collection<{ email?: string; name?: string }>("users");
-    const user = await users.findOne({ email: normalizedEmail });
+    const db = client.db();
 
-    if (user) {
-      const rawToken = await createPasswordResetToken(normalizedEmail);
+    // Check both collections — NextAuth adapter uses "users", manual signup also uses "users"
+    const usersCol = db.collection<{ email?: string; name?: string }>("users");
+    const user = await usersCol.findOne({ email: normalizedEmail });
 
-      const env = getServerEnv();
-      const baseUrl = env.NEXTAUTH_URL ?? "http://localhost:3000";
-      const resetUrl = `${baseUrl}/auth/reset-password?token=${rawToken}`;
+    console.log(`[forgot-password] user found: ${Boolean(user)}`);
 
-      // Fire-and-forget — don't fail the request if email send fails in dev
-      sendPasswordResetEmail({
+    if (!user) {
+      console.log(
+        `[forgot-password] no account for ${normalizedEmail} — skipping email`,
+      );
+
+      // In dev, return a clear message so you know what happened
+      if (isDev) {
+        return ok({
+          success: true,
+          message:
+            "If an account exists for that email, a reset link has been sent.",
+          _dev: `No account found for "${normalizedEmail}". Create an account first, then retry.`,
+        });
+      }
+
+      // In production — always return generic success (prevent email enumeration)
+      return ok({
+        success: true,
+        message:
+          "If an account exists for that email, a reset link has been sent.",
+      });
+    }
+
+    // ── Generate reset token ──────────────────────────────────────
+    console.log(
+      `[forgot-password] creating reset token for: ${normalizedEmail}`,
+    );
+    let rawToken: string;
+    try {
+      rawToken = await createPasswordResetToken(normalizedEmail);
+      console.log(
+        `[forgot-password] reset token created OK for: ${normalizedEmail}`,
+      );
+    } catch (tokenErr) {
+      const message =
+        tokenErr instanceof Error ? tokenErr.message : String(tokenErr);
+      console.error(
+        `[forgot-password] createPasswordResetToken FAILED:`,
+        message,
+      );
+      if (isDev) {
+        return ok({
+          success: false,
+          message: "Failed to create reset token.",
+          _dev: `Token creation error: ${message}. Check MongoDB connection and password_reset_tokens collection.`,
+        });
+      }
+      return ok({
+        success: true,
+        message:
+          "If an account exists for that email, a reset link has been sent.",
+      });
+    }
+
+    const baseUrl = env.NEXTAUTH_URL ?? "http://localhost:3000";
+    const resetUrl = `${baseUrl}/auth/reset-password?token=${rawToken}`;
+    console.log(`[forgot-password] reset URL built: ${resetUrl}`);
+
+    // ── Send email ────────────────────────────────────────────────
+    try {
+      await sendPasswordResetEmail({
         to: normalizedEmail,
         name: user.name ?? undefined,
         resetUrl,
-      }).catch((err) =>
-        console.error("[forgot-password] email send failed:", err),
+      });
+      console.log(
+        `[forgot-password] email sent successfully to: ${normalizedEmail}`,
       );
+    } catch (emailErr) {
+      const message =
+        emailErr instanceof Error ? emailErr.message : String(emailErr);
+      console.error(
+        `[forgot-password] email send FAILED for ${normalizedEmail}:`,
+        message,
+      );
+
+      // In dev — surface the real error so you can fix it immediately
+      if (isDev) {
+        return ok({
+          success: false,
+          message: "Reset token was created but the email failed to send.",
+          _dev: `Resend error: ${message}. Check RESEND_API_KEY and RESEND_FROM_EMAIL in .env.local.`,
+          _resetUrl: resetUrl, // expose the link directly in dev so you can test the reset page
+        });
+      }
     }
 
-    // Always return success to prevent email enumeration
     return ok({
       success: true,
       message:

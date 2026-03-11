@@ -42,8 +42,8 @@ async function run() {
     throw new Error("MONGODB_URI is required. Set it in .env.local or env vars.");
   }
 
-  const email = "admin@gmail.com";
-  const password = "admin123";
+  const email = "info@smarttripai.site";
+  const password = "Password123";
   const passwordHash = await bcrypt.hash(password, 10);
 
   const client = new MongoClient(MONGODB_URI);
